@@ -1,33 +1,59 @@
+import * as dotenv from 'dotenv';
 import axios, { AxiosResponse } from 'axios';
+import QueryString from 'qs';
 
-const SPOTIFY_CLIENT_ID = '97a7d37671c84613aaae12f0d590663a';
-const SPOTIFY_CLIENT_SECRET = '3e721586b8c64aa48ecdf01db5d3e6c6';
+dotenv.config({ path: '/.env' });
+
+const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI } = process.env;
 
 /**
  * Retrieves track from spotify API
  */
 export default class TownsController {
-  public static async getAuth(): Promise<AxiosResponse> {
-    const res = await axios({
-      method: 'post',
-      url: 'https://accounts.spotify.com/api/token',
-      params: {
-        grant_type: 'client_credentials',
-      },
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      auth: {
-        username: SPOTIFY_CLIENT_ID,
-        password: SPOTIFY_CLIENT_SECRET,
-      },
+  public static async getCode(): Promise<AxiosResponse> {
+    const queryParams = QueryString.stringify({
+      client_id: SPOTIFY_CLIENT_ID,
+      response_type: 'code',
+      redirect_uri: SPOTIFY_REDIRECT_URI,
     });
-    return res;
+    try {
+      const res = await axios({
+        method: 'get',
+        url: `https://accounts.spotify.com/authorize?${queryParams}`,
+      });
+      return res.data.code;
+    } catch {
+      throw new Error('Could not authorize');
+    }
+  }
+
+  public static async getToken(): Promise<AxiosResponse> {
+    const code = this.getCode() || null;
+    try {
+      const res = await axios({
+        method: 'post',
+        url: 'https://accounts.spotify.com/api/token',
+        params: {
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: SPOTIFY_REDIRECT_URI,
+        },
+        headers: {
+          'Authorization': `Basic ${Buffer.from(
+            `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`,
+          ).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      const token = res.data.access_token;
+      return token;
+    } catch (error) {
+      throw new Error('could not get auth token');
+    }
   }
 
   public static async getTrack(trackId: string): Promise<AxiosResponse> {
-    const auth = TownsController.getAuth();
+    const auth = TownsController.getToken();
 
     const res = await axios({
       method: 'get',

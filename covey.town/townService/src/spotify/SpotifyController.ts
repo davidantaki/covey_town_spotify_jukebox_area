@@ -10,7 +10,7 @@ const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI } = proce
  * Retrieves track from spotify API
  */
 export default class TownsController {
-  public static async getCode(): Promise<AxiosResponse> {
+  public static async getCode(): Promise<string | null> {
     const queryParams = QueryString.stringify({
       client_id: SPOTIFY_CLIENT_ID,
       response_type: 'code',
@@ -21,14 +21,15 @@ export default class TownsController {
         method: 'get',
         url: `https://accounts.spotify.com/authorize?${queryParams}`,
       });
-      return res.data.code;
+      const urlParams = new URLSearchParams(res.config.url);
+      return urlParams.get('code');
     } catch {
-      throw new Error('Could not authorize');
+      throw new Error('could not authenticate');
     }
   }
 
   public static async getToken(): Promise<AxiosResponse> {
-    const code = this.getCode() || null;
+    const code = this.getCode();
     try {
       const res = await axios({
         method: 'post',

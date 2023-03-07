@@ -59,7 +59,8 @@ export default class TownsController {
       method: 'get',
       url: `https://api.spotify.com/v1/tracks/${trackId}`,
       headers: {
-        Authorization: `Bearer ${auth}`,
+        'Authorization': `Bearer ${auth}`,
+        'Content-Type': 'application/json',
       },
     });
 

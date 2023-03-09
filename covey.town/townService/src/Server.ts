@@ -6,11 +6,13 @@ import swaggerUi from 'swagger-ui-express';
 import { ValidateError } from 'tsoa';
 import fs from 'fs/promises';
 import { Server as SocketServer } from 'socket.io';
+import QueryString from 'qs';
 import { RegisterRoutes } from '../generated/routes';
 import TownsStore from './lib/TownsStore';
 import { ClientToServerEvents, ServerToClientEvents } from './types/CoveyTownSocket';
 import { TownsController } from './town/TownsController';
 import { logError } from './Utils';
+import SpotifyController from './spotify/SpotifyController';
 
 // Create the server instances
 const app = Express();
@@ -65,6 +67,23 @@ app.use(
     return next();
   },
 );
+
+const { SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI } = process.env;
+
+app.get('/login', (_req, res) => {
+  const queryParams = QueryString.stringify({
+    client_id: SPOTIFY_CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: SPOTIFY_REDIRECT_URI,
+  });
+  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
+});
+
+app.get('/callback', async (req, res) => {
+  const code = (req.query.code as string) || null;
+  const tokenInformation = await SpotifyController.getToken(code);
+  res.send(tokenInformation);
+});
 
 // Start the configured server, defaulting to port 8081 if $PORT is not set
 server.listen(process.env.PORT || 8081, () => {

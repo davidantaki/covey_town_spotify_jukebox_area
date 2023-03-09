@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 import { ValidateError } from 'tsoa';
 import fs from 'fs/promises';
 import { Server as SocketServer } from 'socket.io';
+import * as dotenv from 'dotenv';
 import QueryString from 'qs';
 import { RegisterRoutes } from '../generated/routes';
 import TownsStore from './lib/TownsStore';
@@ -21,6 +22,7 @@ const server = http.createServer(app);
 const socketServer = new SocketServer<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: { origin: '*' },
 });
+dotenv.config();
 
 // Initialize the towns store with a factory that creates a broadcast emitter for a town
 TownsStore.initializeTownsStore((townID: string) => socketServer.to(townID));
@@ -70,6 +72,11 @@ app.use(
 
 const { SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI } = process.env;
 
+/**
+ * Endpoint to allow users to login. Going to http://localhost:8081/login will bring you to
+ * Spotify login page, where after granting your credentials, it redirects the page to somewhere
+ * that gives the "authorization" code. This can be refactored in the future.
+ */
 app.get('/login', (_req, res) => {
   const queryParams = QueryString.stringify({
     client_id: SPOTIFY_CLIENT_ID,
@@ -79,9 +86,14 @@ app.get('/login', (_req, res) => {
   res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
 });
 
+/**
+ * Callback endpoint where the "redirect uri" is located and the user can
+ * go to. This is where we get the exchange the authorization code for the
+ * authentication token.
+ */
 app.get('/callback', async (req, res) => {
   const code = (req.query.code as string) || null;
-  const tokenInformation = await SpotifyController.getToken(code);
+  const tokenInformation = await SpotifyController.token(code);
   res.send(tokenInformation);
 });
 

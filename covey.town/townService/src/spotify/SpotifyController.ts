@@ -4,7 +4,6 @@ import QueryString from 'qs';
 import { searchPipe, tokenPipe, trackPipe } from './ValidateSpotify';
 
 dotenv.config({ path: '/.env' });
-
 const { SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, SPOTIFY_REDIRECT_URI } = process.env;
 
 /**
@@ -19,7 +18,7 @@ export default class SpotifyController {
    * @returns an authentication token that can be used to get information from Spotify API.
    * @throws when the authorization code is invalid or when an unknown error occurs.
    */
-  public static async getToken(code: string | null): Promise<unknown> {
+  public static async token(code: string | null): Promise<unknown> {
     const response = axios({
       method: 'post',
       url: 'https://accounts.spotify.com/api/token',

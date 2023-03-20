@@ -405,7 +405,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
     /**
      * When an interactable's state changes, push that update into the relevant controller, which is assumed
-     * to be either a Viewing Area, a Poster Session Area, or a Conversation Area, and which is assumed to already
+     * to be either a Viewing Area, a  Session ArPosterea, or a Conversation Area, and which is assumed to already
      * be represented by a ViewingAreaController or ConversationAreaController that this TownController has.
      *
      * If a conversation area transitions from empty to occupied (or occupied to empty), this handler will emit

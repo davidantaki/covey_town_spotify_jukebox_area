@@ -15,12 +15,12 @@ export type JukeBoxAreaEvents = {
 };
 
 /**
- * A JukeBoxAreaController manages the state for a JukeBoxArea in the frontend app, serving as a bridge between the poster
- * image that is being displayed in the user's browser and the backend TownService, and ensuring that star updates are
- * synchronized across all the players looking at the poster.
+ * A JukeBoxAreaController manages the state for a JukeBoxArea in the frontend app, serving as a bridge between the Spotify
+ * song queue displayed in the front end and the backend TownService, and ensuring that star updates are
+ * synchronized across all the players looking at the juke box area.
  *
- * The PosterSessionAreaController implements callbacks that handle events from the poster image in this browser window, and
- * emits updates when the state is updated, @see PosterSessionAreaEvents
+ * The JukeBoxAreaController implements callbacks that handle events from the song queue in this browser window, and
+ * emits updates when the state is updated, @see JukeBoxAreaEvents
  */
 export default class JukeBoxAreaController extends (EventEmitter as new () => TypedEventEmitter<JukeBoxAreaEvents>) {
   private _model: JukeBoxAreaModel;
@@ -31,7 +31,7 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
    * Constructs a new JukeBoxAreaController, initialized with the state of the
    * provided jukeBoxAreaModel.
    *
-   * @param posterSessionAreaModel The poster session area model that this controller should represent
+   * @param JukeBoxAreaModel The juke box area model that this controller should represent
    */
   constructor(jukeBoxAreaModel: JukeBoxAreaModel) {
     super();
@@ -40,9 +40,9 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
   }
 
   /**
-   * The ID of the poster session area represented by this juke box area controller
+   * The ID of the juke box area represented by this juke box area controller
    * This property is read-only: once a JukeBoxAreaController is created, it will always be
-   * tied to the same poster session area ID.
+   * tied to the same juke box area ID.
    */
   public get id(): string {
     return this._model.id;
@@ -65,14 +65,14 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
   }
 
   /**
-   * @returns JukeBoxAreaModel that represents the current state of this PosterSessionAreaController
+   * @returns JukeBoxAreaModel that represents the current state of this JukeBoxAreaController
    */
   public jukeBoxAreaModel(): JukeBoxAreaModel {
     return this._model;
   }
 
   /**
-   * Applies updates to this poster session area controller's model, setting the fields
+   * Applies updates to this juke box area controller's model, setting the fields
    * image, stars, and title from the updatedModel
    *
    * @param updatedModel

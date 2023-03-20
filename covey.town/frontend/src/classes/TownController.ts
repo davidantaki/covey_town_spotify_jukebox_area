@@ -16,10 +16,12 @@ import {
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
 } from '../types/CoveyTownSocket';
-import { isConversationArea, isViewingArea } from '../types/TypeUtils';
+import { isConversationArea, isViewingArea, isJukeBoxArea } from '../types/TypeUtils';
 import ConversationAreaController from './ConversationAreaController';
 import PlayerController from './PlayerController';
 import ViewingAreaController from './ViewingAreaController';
+import JukeBoxAreaController from './JukeBoxAreaController';
+import JukeBoxArea from '../components/Town/interactables/JukeBoxArea';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY = 300;
 
@@ -189,6 +191,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
   private _interactableEmitter = new EventEmitter();
 
   private _viewingAreas: ViewingAreaController[] = [];
+
+  private _jukeBoxAreas: JukeBoxAreaController[] = [];
 
   public constructor({ userName, townID, loginController }: ConnectionProperties) {
     super();
@@ -401,8 +405,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
     /**
      * When an interactable's state changes, push that update into the relevant controller, which is assumed
-     * to be either a Viewing Area or a Conversation Area, and which is assumed to already be represented by a
-     * ViewingAreaController or ConversationAreaController that this TownController has.
+     * to be either a Viewing Area, a Poster Session Area, or a Conversation Area, and which is assumed to already
+     * be represented by a ViewingAreaController or ConversationAreaController that this TownController has.
      *
      * If a conversation area transitions from empty to occupied (or occupied to empty), this handler will emit
      * a conversationAreasChagned event to listeners of this TownController.
@@ -412,21 +416,26 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
      */
     this._socket.on('interactableUpdate', interactable => {
       if (isConversationArea(interactable)) {
-        const updatedConversationArea = this.conversationAreas.find(c => c.id === interactable.id);
-        if (updatedConversationArea) {
-          const emptyNow = updatedConversationArea.isEmpty();
-          updatedConversationArea.topic = interactable.topic;
-          updatedConversationArea.occupants = this._playersByIDs(interactable.occupantsByID);
-          const emptyAfterChange = updatedConversationArea.isEmpty();
-          if (emptyNow !== emptyAfterChange) {
+        const relArea = this.conversationAreas.find(area => area.id == interactable.id);
+        if (relArea) {
+          const startsEmpty = relArea.isEmpty();
+          // do the update
+          relArea.topic = interactable.topic;
+          relArea.occupants = this._playersByIDs(interactable.occupantsByID);
+          if (startsEmpty != relArea.isEmpty()) {
             this.emit('conversationAreasChanged', this._conversationAreasInternal);
           }
         }
       } else if (isViewingArea(interactable)) {
-        const updatedViewingArea = this._viewingAreas.find(
-          eachArea => eachArea.id === interactable.id,
-        );
-        updatedViewingArea?.updateFrom(interactable);
+        const relArea = this.viewingAreas.find(area => area.id == interactable.id);
+        if (relArea) {
+          relArea.updateFrom(interactable);
+        }
+      } else if (isJukeBoxArea(interactable)) {
+        const relArea = this._jukeBoxAreas.find(area => area.id == interactable.id);
+        if (relArea) {
+          relArea.updateFrom(interactable);
+        }
       }
     });
   }
@@ -587,6 +596,22 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
     }
   }
 
+  public getJukeBoxAreaController(jukeBoxArea: JukeBoxArea): JukeBoxAreaController {
+    const existingController = this._jukeBoxAreas.find(
+      eachExistingArea => eachExistingArea.id === jukeBoxArea.name,
+    );
+    if (existingController) {
+      return existingController;
+    } else {
+      const newController = new JukeBoxAreaController({
+        id: jukeBoxArea.name,
+        songQueue: [],
+      });
+      this._jukeBoxAreas.push(newController);
+      return newController;
+    }
+  }
+
   /**
    * Emit a viewing area update to the townService
    * @param viewingArea The Viewing Area Controller that is updated and should be emitted
@@ -629,50 +654,28 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
  * @returns an object with the properties "friendlyName" and "isPubliclyListed",
  *  representing the current settings of the current town
  */
-export function useTownSettings() {
+export function useTownSettings(): { friendlyName: string; isPubliclyListed: boolean } {
   const townController = useTownController();
-  const [friendlyName, setFriendlyName] = useState<string>(townController.friendlyName);
-  const [isPubliclyListed, setIsPubliclyListed] = useState<boolean>(
-    townController.townIsPubliclyListed,
-  );
+  const [name, setName] = useState<string>(townController.friendlyName);
+  const [listed, setListed] = useState<boolean>(townController.townIsPubliclyListed);
   useEffect(() => {
-    const updateTownSettings = (update: TownSettingsUpdate) => {
-      const newName = update.friendlyName;
-      const newPublicSetting = update.isPubliclyListed;
-      if (newName !== undefined) {
-        setFriendlyName(newName);
+    const settingsUpdater = (upt: TownSettingsUpdate) => {
+      const uptname = upt.friendlyName;
+      const uptlisted = upt.isPubliclyListed;
+      // might only be updating one setting; dont update if undefined
+      if (uptname) {
+        setName(uptname);
       }
-      if (newPublicSetting !== undefined) {
-        setIsPubliclyListed(newPublicSetting);
+      if (uptlisted != undefined) {
+        setListed(uptlisted);
       }
     };
-    townController.addListener('townSettingsUpdated', updateTownSettings);
+    townController.addListener('townSettingsUpdated', settingsUpdater);
     return () => {
-      townController.removeListener('townSettingsUpdated', updateTownSettings);
+      townController.removeListener('townSettingsUpdated', settingsUpdater);
     };
   }, [townController]);
-  return { friendlyName, isPubliclyListed };
-}
-
-/**
- * A react hook to retrieve a viewing area controller.
- *
- * This function will throw an error if the viewing area controller does not exist.
- *
- * This hook relies on the TownControllerContext.
- *
- * @param viewingAreaID The ID of the viewing area to retrieve the controller for
- *
- * @throws Error if there is no viewing area controller matching the specifeid ID
- */
-export function useViewingAreaController(viewingAreaID: string): ViewingAreaController {
-  const townController = useTownController();
-
-  const viewingArea = townController.viewingAreas.find(eachArea => eachArea.id == viewingAreaID);
-  if (!viewingArea) {
-    throw new Error(`Requested viewing area ${viewingAreaID} does not exist`);
-  }
-  return viewingArea;
+  return { friendlyName: name, isPubliclyListed: listed };
 }
 
 /**
@@ -687,17 +690,19 @@ export function useViewingAreaController(viewingAreaID: string): ViewingAreaCont
 export function useActiveConversationAreas(): ConversationAreaController[] {
   const townController = useTownController();
   const [conversationAreas, setConversationAreas] = useState<ConversationAreaController[]>(
-    townController.conversationAreas.filter(eachArea => !eachArea.isEmpty()),
+    townController.conversationAreas.filter(area => !area.isEmpty()),
   );
+
   useEffect(() => {
-    const updater = (allAreas: ConversationAreaController[]) => {
-      setConversationAreas(allAreas.filter(eachArea => !eachArea.isEmpty()));
+    const activeSetter = (areas: ConversationAreaController[]) => {
+      setConversationAreas(areas.filter(area => !area.isEmpty()));
     };
-    townController.addListener('conversationAreasChanged', updater);
+    townController.addListener('conversationAreasChanged', activeSetter);
     return () => {
-      townController.removeListener('conversationAreasChanged', updater);
+      townController.removeListener('conversationAreasChanged', activeSetter);
     };
   }, [townController, setConversationAreas]);
+
   return conversationAreas;
 }
 
@@ -716,12 +721,33 @@ export function usePlayers(): PlayerController[] {
   const townController = useTownController();
   const [players, setPlayers] = useState<PlayerController[]>(townController.players);
   useEffect(() => {
+    // no listener for 'playerMoved'
     townController.addListener('playersChanged', setPlayers);
     return () => {
       townController.removeListener('playersChanged', setPlayers);
     };
   }, [townController, setPlayers]);
   return players;
+}
+
+/**
+ * A react hook to retrieve a viewing area controller.
+ *
+ * This function will throw an error if the viewing area controller does not exist.
+ *
+ * This hook relies on the TownControllerContext.
+ *
+ * @param viewingAreaID The ID of the viewing area to retrieve the controller for
+ *
+ * @throws Error if there is no viewing area controller matching the specifeid ID
+ */
+export function useViewingAreaController(viewingAreaID: string): ViewingAreaController {
+  const townController = useTownController();
+  const ret = townController.viewingAreas.find(eachArea => eachArea.id === viewingAreaID);
+  if (!ret) {
+    throw new Error(`Unable to locate viewing area id ${viewingAreaID}`);
+  }
+  return ret;
 }
 
 function samePlayers(a1: PlayerController[], a2: PlayerController[]) {

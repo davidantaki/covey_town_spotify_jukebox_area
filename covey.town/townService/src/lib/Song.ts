@@ -34,32 +34,16 @@ class Song {
     return this._title;
   }
 
-  set title(title: string) {
-    this._title = title;
-  }
-
   get artists(): [] {
     return this._artists;
-  }
-
-  set artists(artists: []) {
-    this._artists = artists;
   }
 
   get spotifyId(): string {
     return this._spotifyId;
   }
 
-  set spotifyId(spotifyId: string) {
-    this._spotifyId = spotifyId;
-  }
-
   get addedBy(): string {
     return this._addedBy;
-  }
-
-  set addedBy(addedBy: string) {
-    this._addedBy = addedBy;
   }
 
   get upvotes(): number {
@@ -80,10 +64,6 @@ class Song {
 
   get songJson(): string {
     return this._songJson;
-  }
-
-  set songJson(songJson: string) {
-    this._songJson = songJson;
   }
 
   getNetVotes(): number {

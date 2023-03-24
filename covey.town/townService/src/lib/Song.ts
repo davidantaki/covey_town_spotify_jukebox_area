@@ -63,7 +63,7 @@ class Song {
   }
 
   get songJson(): string {
-    return this._songJson;
+    return { ...this._songJson };
   }
 
   getNetVotes(): number {

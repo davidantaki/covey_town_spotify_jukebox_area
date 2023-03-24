@@ -3,7 +3,7 @@ class Song {
   private _title: string;
 
   // The artists of the song
-  private _artists: [];
+  private _artists: string[];
 
   // The spotifyID of the song
   private _spotifyId: string;
@@ -27,14 +27,14 @@ class Song {
     this._addedBy = addedBy;
     this._upvotes = 0;
     this._downvotes = 0;
-    this._songJson = songJson;
+    this._songJson = { ...songJson };
   }
 
   get title(): string {
     return this._title;
   }
 
-  get artists(): [] {
+  get artists(): string[] {
     return this._artists;
   }
 

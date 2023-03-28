@@ -152,14 +152,22 @@ export function JukeBoxArea({
 
   console.log('here');
 
-  return (
-    <Stack spacing={3}>
-      <Input placeholder='extra small size' size='xs' />
-      <Input placeholder='small size' size='sm' />
-      <Input placeholder='medium size' size='md' />
-      <Input placeholder='large size' size='lg' />
-    </Stack>
-  );
+  // return (
+  //   <Stack spacing={3}>
+  //     <Input placeholder='extra small size' size='xs' />
+  //     <Input placeholder='small size' size='sm' />
+  //     <Input placeholder='medium size' size='md' />
+  //     <Input placeholder='large size' size='lg' />
+  //   </Stack>
+  // );
+
+  // Log state of isOpen
+  console.log('isOpen', isOpen);
+
+  // set is open to true if it is false
+  if (!isOpen) {
+    onOpen();
+  }
 
   return (
     <>
@@ -168,12 +176,12 @@ export function JukeBoxArea({
         <ModalContent>
           <ModalHeader>Modal Title</ModalHeader>
           <ModalCloseButton />
-          {/* <ModalFooter>
+          <ModalFooter>
             <Button colorScheme='blue' mr={3} onClick={onClose}>
               Close
             </Button>
             <Button variant='ghost'>Secondary Action</Button>
-          </ModalFooter> */}
+          </ModalFooter>
         </ModalContent>
       </Modal>
     </>

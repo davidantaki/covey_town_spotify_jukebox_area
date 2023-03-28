@@ -16,7 +16,7 @@ export default class JukeBoxArea extends Interactable {
     this._labelText = this.scene.add.text(
       this.x - this.displayWidth / 2,
       this.y - this.displayHeight / 2,
-      `Press space to look at the ${this.name} poster`,
+      `Press space to open the ${this.name} and listen to music`,
       { color: '#FFFFFF', backgroundColor: '#000000' },
     );
     this._labelText.setVisible(false);
@@ -48,6 +48,6 @@ export default class JukeBoxArea extends Interactable {
   }
 
   getType(): KnownInteractableTypes {
-    throw new Error('Method not implemented.');
+    return 'jukeBoxArea';
   }
 }

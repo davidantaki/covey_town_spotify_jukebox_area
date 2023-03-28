@@ -18,6 +18,7 @@ import {
   InputRightElement,
   IconButton,
   InputLeftElement,
+  useDisclosure,
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
@@ -132,7 +133,8 @@ export function JukeBoxArea({
 
   const toast = useToast();
 
-  const [selectIsOpen, setSelectIsOpen] = useState(false);
+  const [selectIsOpen, setSelectIsOpen] = useState(true);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [queue, setQueue] = useState(jukeBoxAreaController.queue);
   useEffect(() => {
     const setQeueue = (q: string[] | undefined) => {
@@ -151,18 +153,45 @@ export function JukeBoxArea({
   console.log('here');
 
   return (
-    <Modal
-      isOpen={selectIsOpen}
-      onClose={() => {
-        closeModal();
-        townController.interactEnd(jukeBoxArea);
-      }}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Pick a video to watch i </ModalHeader>
-      </ModalContent>
-    </Modal>
+    <Stack spacing={3}>
+      <Input placeholder='extra small size' size='xs' />
+      <Input placeholder='small size' size='sm' />
+      <Input placeholder='medium size' size='md' />
+      <Input placeholder='large size' size='lg' />
+    </Stack>
   );
+
+  return (
+    <>
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Modal Title</ModalHeader>
+          <ModalCloseButton />
+          {/* <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={onClose}>
+              Close
+            </Button>
+            <Button variant='ghost'>Secondary Action</Button>
+          </ModalFooter> */}
+        </ModalContent>
+      </Modal>
+    </>
+  );
+
+  // return (
+  //   <Modal
+  //     isOpen={selectIsOpen}
+  //     onClose={() => {
+  //       closeModal();
+  //       townController.interactEnd(jukeBoxArea);
+  //     }}>
+  //     <ModalOverlay />
+  //     <ModalContent>
+  //       <ModalHeader>Pick a video to watch i </ModalHeader>
+  //     </ModalContent>
+  //   </Modal>
+  // );
 }
 
 /**

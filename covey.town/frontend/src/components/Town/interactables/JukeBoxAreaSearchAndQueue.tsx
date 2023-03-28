@@ -119,7 +119,7 @@ export function JukeBoxAreaSearchAndQueue({
 export function JukeBoxArea({
   jukeBoxArea,
 }: {
-  // isOpen: boolean;
+  // isOpenInit: boolean;
   // close: () => void;
   jukeBoxArea: JukeBoxAreaInteractable;
 }): JSX.Element {
@@ -132,9 +132,16 @@ export function JukeBoxArea({
   }, [townController, close]);
 
   const toast = useToast();
-
-  const [selectIsOpen, setSelectIsOpen] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  useEffect(() => {
+    if (isOpen) {
+      townController.pause();
+    } else {
+      townController.unPause();
+    }
+  }, [townController, isOpen]);
+
   const [queue, setQueue] = useState(jukeBoxAreaController.queue);
   useEffect(() => {
     const setQeueue = (q: string[] | undefined) => {
@@ -161,9 +168,6 @@ export function JukeBoxArea({
   //   </Stack>
   // );
 
-  // Log state of isOpen
-  console.log('isOpen', isOpen);
-
   // set is open to true if it is false
   if (!isOpen) {
     onOpen();
@@ -171,7 +175,12 @@ export function JukeBoxArea({
 
   return (
     <>
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => {
+          closeModal();
+          townController.interactEnd(jukeBoxArea);
+        }}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Modal Title</ModalHeader>

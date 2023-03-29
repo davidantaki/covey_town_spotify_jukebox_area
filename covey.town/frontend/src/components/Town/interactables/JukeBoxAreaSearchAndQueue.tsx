@@ -18,8 +18,13 @@ import {
   InputRightElement,
   InputLeftElement,
   useDisclosure,
+  Image,
+  Box,
+  Badge,
+  VStack,
+  Grid,
+  GridItem,
 } from '@chakra-ui/react';
-
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
@@ -34,81 +39,40 @@ export class MockReactPlayer extends ReactPlayer {
   }
 }
 
-/*
-export function JukeBoxAreaSearchAndQueue({
-  controller,
+export function SearchResult({
+  songTitle,
+  songArtist,
+  songDuration,
 }: {
-  controller: JukeBoxAreaController;
+  songTitle: string;
+  songArtist: string;
+  songDuration: string;
 }): JSX.Element {
-  // const [isPlaying, setPlaying] = useState<boolean>(controller.isPlaying);
-  const townController = useTownController();
-
-  const reactPlayerRef = useRef<ReactPlayer>(null);
-
-  // useEffect(() => {
-  //   const progressListener = (newTime: number) => {
-  //     const currentTime = reactPlayerRef.current?.getCurrentTime();
-  //     if (currentTime !== undefined && Math.abs(currentTime - newTime) > ALLOWED_DRIFT) {
-  //       reactPlayerRef.current?.seekTo(newTime, 'seconds');
-  //     }
-  //   };
-  //   controller.addListener('progressChange', progressListener);
-  //   controller.addListener('playbackChange', setPlaying);
-  //   return () => {
-  //     controller.removeListener('playbackChange', setPlaying);
-  //     controller.removeListener('progressChange', progressListener);
-  //   };
-  // }, [controller]);
+  const property = {
+    imageUrl: 'https://bit.ly/2Z4KKcF',
+    imageAlt: 'Rear view of modern home with pool',
+    beds: 3,
+    baths: 2,
+    title: 'Modern home in city center in the heart of historic Los Angeles',
+    formattedPrice: '$1,900.00',
+    reviewCount: 34,
+    rating: 4,
+  };
 
   return (
-    <Container className='participant-wrapper'>
-      Viewing Area: {controller.id}
-      <ReactPlayer
-        // url={controller.video}
-        ref={reactPlayerRef}
-        config={{
-          youtube: {
-            playerVars: {
-              // disable skipping time via keyboard to avoid weirdness with chat, etc
-              disablekb: 1,
-              autoplay: 1,
-              // modestbranding: 1,
-            },
-          },
-        }}
-        // playing={isPlaying}
-        // onProgress={state => {
-        //   if (state.playedSeconds != 0 && state.playedSeconds != controller.elapsedTimeSec) {
-        //     controller.elapsedTimeSec = state.playedSeconds;
-        //     townController.emitViewingAreaUpdate(controller);
-        //   }
-        // }}
-        // onPlay={() => {
-        //   if (!controller.isPlaying) {
-        //     controller.isPlaying = true;
-        //     townController.emitViewingAreaUpdate(controller);
-        //   }
-        // }}
-        // onPause={() => {
-        //   if (controller.isPlaying) {
-        //     controller.isPlaying = false;
-        //     townController.emitViewingAreaUpdate(controller);
-        //   }
-        // }}
-        // onEnded={() => {
-        //   if (controller.isPlaying) {
-        //     controller.isPlaying = false;
-        //     townController.emitViewingAreaUpdate(controller);
-        //   }
-        // }}
-        // controls={true}
-        // width='100%'
-        // height='100%'
-      />
-    </Container>
+    <Grid templateRows='repeat(1, 1fr)' templateColumns='repeat(3, 1fr)' gap={50} p='0'>
+      <GridItem colSpan={1} h='10' bg='transparent'>
+        {songTitle}
+      </GridItem>
+      <GridItem colSpan={1} h='10' bg='transparent'>
+        {songArtist}
+      </GridItem>
+      <GridItem colSpan={1} h='10' bg='transparent'>
+        {songDuration}
+      </GridItem>
+    </Grid>
   );
 }
-*/
 
 /**
  * The ViewingArea monitors the player's interaction with a ViewingArea on the map: displaying either
@@ -170,7 +134,8 @@ export function JukeBoxArea({
         onClose={() => {
           closeModal();
           townController.interactEnd(jukeBoxArea);
-        }}>
+        }}
+        size={'full'}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>JukeBox</ModalHeader>
@@ -184,7 +149,11 @@ export function JukeBoxArea({
               placeholder='Search Songs'
             />
           </InputGroup>
-          {/* <Input variant='outline' placeholder='Search Songs' /> */}
+          <VStack>
+            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
+            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
+            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
+          </VStack>
           <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>

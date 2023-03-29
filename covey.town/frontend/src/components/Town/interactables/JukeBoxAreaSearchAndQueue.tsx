@@ -33,8 +33,8 @@ import JukeBoxAreaController from '../../../classes/JukeBoxAreaController';
 import useTownController from '../../../hooks/useTownController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
 import QueryString from 'qs';
-import { redirectToAuthCodeFlow } from '../../../spotify/authCodeWithPkce';
 import { getSpotifyToken } from '../../../spotify/client_credentials';
+import SpotifyController from '../../../spotify/SpotifyController';
 
 const ALLOWED_DRIFT = 3;
 export class MockReactPlayer extends ReactPlayer {
@@ -97,10 +97,9 @@ export function JukeBoxArea({
   const [spotifyApiToken, setToken] = useState('');
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchValue(event.target.value);
-    // SpotifyController.token('null');
-    // SpotifyController.search(searchValue, SpotifyController.token()).then((res) => {
-    //   console.log(res);
-    // }
+    SpotifyController.search(spotifyApiToken, searchValue, 'track', 10).then(res => {
+      console.log(res);
+    });
   };
 
   const closeModal = useCallback(() => {
@@ -140,20 +139,16 @@ export function JukeBoxArea({
     try {
       const token = await getSpotifyToken();
       setToken(token);
+      toast({
+        title: 'Successfully got Spotify API Token',
+        status: 'success',
+      });
     } catch (err) {
-      if (err instanceof Error) {
-        toast({
-          title: 'Unable to create conversation',
-          description: err.toString(),
-          status: 'error',
-        });
-      } else {
-        console.trace(err);
-        toast({
-          title: 'Unexpected Error',
-          status: 'error',
-        });
-      }
+      console.trace(err);
+      toast({
+        title: 'Error when trying to get Spotify API Token',
+        status: 'error',
+      });
     }
   }, [toast]);
 

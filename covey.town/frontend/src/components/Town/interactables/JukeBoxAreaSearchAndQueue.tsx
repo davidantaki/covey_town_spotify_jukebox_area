@@ -225,7 +225,7 @@ export function JukeBoxArea({
             Get one{' '}
             <Link
               isExternal
-              href={`https://accounts.spotify.com/en/authorize?response_type=token&client_id=adaaf209fb064dfab873a71817029e0d&redirect_uri=https:%2F%2Fdeveloper.spotify.com%2Fdocumentation%2Fweb-playback-sdk%2Fquick-start%2F&scope=${scopes.join(
+              href={`https://accounts.spotify.com/en/authorize?response_type=token&client_id=${SPOTIFY_CLIENT_ID}&redirect_uri=${SPOTIFY_REDIRECT_URI}&scope=${scopes.join(
                 '%20',
               )}&show_dialog=true`}>
               here

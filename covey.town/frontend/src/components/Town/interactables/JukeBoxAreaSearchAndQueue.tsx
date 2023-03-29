@@ -16,10 +16,10 @@ import {
   Text,
   InputGroup,
   InputRightElement,
-  IconButton,
   InputLeftElement,
   useDisclosure,
 } from '@chakra-ui/react';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
@@ -125,14 +125,17 @@ export function JukeBoxArea({
 }): JSX.Element {
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
+  const [searchValue, setSearchValue] = React.useState('');
+  const handleChange = (event: { target: { value: React.SetStateAction<string> } }) => {
+    setSearchValue(event.target.value);
+  };
 
   const closeModal = useCallback(() => {
     townController.unPause();
-    close();
-  }, [townController, close]);
-
+  }, [townController]);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [queue, setQueue] = useState(jukeBoxAreaController.queue);
 
   useEffect(() => {
     if (isOpen) {
@@ -141,8 +144,6 @@ export function JukeBoxArea({
       townController.unPause();
     }
   }, [townController, isOpen]);
-
-  const [queue, setQueue] = useState(jukeBoxAreaController.queue);
   useEffect(() => {
     const setQeueue = (q: string[] | undefined) => {
       if (!q) {
@@ -156,17 +157,6 @@ export function JukeBoxArea({
     //   jukeBoxAreaController.removeListener('jukeBoxQueueChange', setQueue);
     // };
   }, [jukeBoxAreaController, townController]);
-
-  console.log('here');
-
-  // return (
-  //   <Stack spacing={3}>
-  //     <Input placeholder='extra small size' size='xs' />
-  //     <Input placeholder='small size' size='sm' />
-  //     <Input placeholder='medium size' size='md' />
-  //     <Input placeholder='large size' size='lg' />
-  //   </Stack>
-  // );
 
   // set is open to true if it is false
   if (!isOpen) {
@@ -183,32 +173,23 @@ export function JukeBoxArea({
         }}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Modal Title</ModalHeader>
+          <ModalHeader>JukeBox</ModalHeader>
           <ModalCloseButton />
-          <ModalFooter>
-            <Button colorScheme='blue' mr={3} onClick={onClose}>
-              Close
-            </Button>
-            <Button variant='ghost'>Secondary Action</Button>
-          </ModalFooter>
+          <InputGroup>
+            <Input
+              pr='4.5rem'
+              type='tel'
+              value={searchValue}
+              onChange={handleChange}
+              placeholder='Search Songs'
+            />
+          </InputGroup>
+          {/* <Input variant='outline' placeholder='Search Songs' /> */}
+          <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>
     </>
   );
-
-  // return (
-  //   <Modal
-  //     isOpen={selectIsOpen}
-  //     onClose={() => {
-  //       closeModal();
-  //       townController.interactEnd(jukeBoxArea);
-  //     }}>
-  //     <ModalOverlay />
-  //     <ModalContent>
-  //       <ModalHeader>Pick a video to watch i </ModalHeader>
-  //     </ModalContent>
-  //   </Modal>
-  // );
 }
 
 /**

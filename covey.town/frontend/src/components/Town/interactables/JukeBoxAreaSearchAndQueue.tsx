@@ -32,7 +32,6 @@ import { useInteractable, useJukeBoxAreaController } from '../../../classes/Town
 import JukeBoxAreaController from '../../../classes/JukeBoxAreaController';
 import useTownController from '../../../hooks/useTownController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
-import SpotifyController from '../../../spotify/SpotifyController';
 import QueryString from 'qs';
 
 const ALLOWED_DRIFT = 3;

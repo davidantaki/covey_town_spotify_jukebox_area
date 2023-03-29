@@ -94,6 +94,7 @@ export function JukeBoxArea({
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
   const [searchValue, setSearchValue] = React.useState('');
+  const [spotifyApiToken, setToken] = useState('');
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchValue(event.target.value);
     // SpotifyController.token('null');
@@ -135,74 +136,31 @@ export function JukeBoxArea({
     onOpen();
   }
 
-  const [token, setToken] = useState('');
+  const spotifyLogin = useCallback(async () => {
+    try {
+      const token = await getSpotifyToken();
+      setToken(token);
+    } catch (err) {
+      if (err instanceof Error) {
+        toast({
+          title: 'Unable to create conversation',
+          description: err.toString(),
+          status: 'error',
+        });
+      } else {
+        console.trace(err);
+        toast({
+          title: 'Unexpected Error',
+          status: 'error',
+        });
+      }
+    }
+  }, [toast]);
 
-  // useEffect(() => {
-  //   const hash = window.location.hash;
-  //   let localToken = window.localStorage.getItem('token');
-
-  //   if (!localToken && hash) {
-  //     localToken = hash
-  //       .substring(1)
-  //       .split('&')
-  //       .find(elem => elem.startsWith('access_token'))
-  //       .split('=')[1];
-
-  //     window.location.hash = '';
-  //     window.localStorage.setItem('token', localToken);
-  //   }
-
-  //   setToken(localToken);
-  // }, []);
-
-  // const logout = () => {
-  //   setToken('');
-  //   window.localStorage.removeItem('token');
-  // };
-
-  // const spotifyLogin = useCallback(async () => {
-  //   try {
-  //     await SpotifyController.login();
-  //     townController.unPause();
-  //     closeModal();
-  //   } catch (err) {
-  //     if (err instanceof Error) {
-  //       toast({
-  //         title: 'Unable to create conversation',
-  //         description: err.toString(),
-  //         status: 'error',
-  //       });
-  //     } else {
-  //       console.trace(err);
-  //       toast({
-  //         title: 'Unexpected Error',
-  //         status: 'error',
-  //       });
-  //     }
-  //   }
-  // }, [closeModal, townController, toast]);
-
-  // spotifyLogin();
-
-  const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
-  const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
-  const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-  const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
-  const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
-  const SPOTIFY_RESPONSE_TYPE = 'token';
-
-  const scopes = [
-    'streaming',
-    'user-read-email',
-    'user-read-private',
-    'user-library-read',
-    'user-library-modify',
-    'user-read-playback-state',
-    'user-modify-playback-state',
-  ];
-
-  // redirectToAuthCodeFlow(SPOTIFY_CLIENT_ID);
-  getSpotifyToken();
+  // Get Spotify API token if it is not already set.
+  if (spotifyApiToken === '') {
+    spotifyLogin();
+  }
 
   return (
     <>
@@ -226,16 +184,6 @@ export function JukeBoxArea({
               placeholder='Search Songs'
             />
           </InputGroup>
-          <Text mt='md'>
-            Get one{' '}
-            <Link
-              isExternal
-              href={`https://accounts.spotify.com/en/authorize?response_type=token&client_id=${SPOTIFY_CLIENT_ID}&redirect_uri=${SPOTIFY_REDIRECT_URI}&scope=${scopes.join(
-                '%20',
-              )}&show_dialog=true`}>
-              here
-            </Link>
-          </Text>
           <VStack>
             <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
             <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />

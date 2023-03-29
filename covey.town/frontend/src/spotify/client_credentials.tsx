@@ -16,25 +16,23 @@ const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
 const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_RESPONSE_TYPE = 'token';
 
-let token = '';
-
-export function getSpotifyToken() {
-  // Make a post request to the Spotify Accounts using fetch()
-  fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Basic ' + base64_encode(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET),
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: 'grant_type=client_credentials',
-  })
-    .then(response => response.json())
-    .then(data => {
-      // use the access token to access the Spotify Web API
-      token = data.access_token;
-      console.log(token);
-    })
-    .catch(error => {
-      console.log(error);
+export async function getSpotifyToken(): Promise<string> {
+  let token = '';
+  try {
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + base64_encode(SPOTIFY_CLIENT_ID + ':' + SPOTIFY_CLIENT_SECRET),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'grant_type=client_credentials',
     });
+    const data = await response.json();
+    token = data.access_token;
+    console.log(token);
+    return token;
+  } catch (error) {
+    console.log(error);
+    return token;
+  }
 }

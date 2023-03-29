@@ -1,4 +1,4 @@
-import { decode as base64_decode, encode as base64_encode } from 'base-64';
+import { encode as base64_encode } from 'base-64';
 
 /**
  * This is an example of a basic node.js script that performs
@@ -16,7 +16,7 @@ const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
 const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
 const SPOTIFY_RESPONSE_TYPE = 'token';
 
-export async function getSpotifyToken(): Promise<string> {
+export async function fetchToken(): Promise<string> {
   let token = '';
   try {
     const response = await fetch('https://accounts.spotify.com/api/token', {

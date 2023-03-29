@@ -1,40 +1,24 @@
 import {
-  Button,
-  FormControl,
-  FormLabel,
+  Grid,
+  GridItem,
   Input,
+  InputGroup,
   Modal,
-  ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  useToast,
-  Container,
-  Stack,
-  Text,
-  InputGroup,
-  InputRightElement,
-  InputLeftElement,
   useDisclosure,
-  Image,
-  Box,
-  Badge,
+  useToast,
   VStack,
-  Grid,
-  GridItem,
-  Link,
 } from '@chakra-ui/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { encode as base64_encode } from 'base-64';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
-import JukeBoxAreaController from '../../../classes/JukeBoxAreaController';
 import useTownController from '../../../hooks/useTownController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
-import QueryString from 'qs';
-import { getSpotifyToken } from '../../../spotify/client_credentials';
-import SpotifyController from '../../../spotify/SpotifyController';
 
 const ALLOWED_DRIFT = 3;
 export class MockReactPlayer extends ReactPlayer {
@@ -94,15 +78,15 @@ export function JukeBoxArea({
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
   const [searchValue, setSearchValue] = React.useState('');
-  const [spotifyApiToken, setToken] = useState('');
   // Current search results JSON Object
   const [searchResults, setSearchResults] = useState<any>();
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchValue(event.target.value);
-    SpotifyController.search(spotifyApiToken, searchValue, 'track', 10).then(res => {
-      setSearchResults(res);
-      console.log(res);
-    });
+    // SpotifyController.token('null');
+    // SpotifyController.search(searchValue, SpotifyController.token()).then((res) => {
+    setSearchResults(res);
+    //   console.log(res);
+    // }
   };
 
   const closeModal = useCallback(() => {
@@ -138,27 +122,87 @@ export function JukeBoxArea({
     onOpen();
   }
 
-  const spotifyLogin = useCallback(async () => {
-    try {
-      const token = await getSpotifyToken();
-      setToken(token);
-      toast({
-        title: 'Successfully got Spotify API Token',
-        status: 'success',
-      });
-    } catch (err) {
-      console.trace(err);
-      toast({
-        title: 'Error when trying to get Spotify API Token',
-        status: 'error',
-      });
-    }
-  }, [toast]);
+  const [token, setToken] = useState<undefined | string>(undefined);
 
-  // Get Spotify API token if it is not already set.
-  if (spotifyApiToken === '') {
-    spotifyLogin();
-  }
+  // useEffect(() => {
+  //   const hash = window.location.hash;
+  //   let localToken = window.localStorage.getItem('token');
+
+  //   if (!localToken && hash) {
+  //     localToken = hash
+  //       .substring(1)
+  //       .split('&')
+  //       .find(elem => elem.startsWith('access_token'))
+  //       .split('=')[1];
+
+  //     window.location.hash = '';
+  //     window.localStorage.setItem('token', localToken);
+  //   }
+
+  //   setToken(localToken);
+  // }, []);
+
+  // const logout = () => {
+  //   setToken('');
+  //   window.localStorage.removeItem('token');
+  // };
+
+  // const spotifyLogin = useCallback(async () => {
+  //   try {
+  //     await SpotifyController.login();
+  //     townController.unPause();
+  //     closeModal();
+  //   } catch (err) {
+  //     if (err instanceof Error) {
+  //       toast({
+  //         title: 'Unable to create conversation',
+  //         description: err.toString(),
+  //         status: 'error',
+  //       });
+  //     } else {
+  //       console.trace(err);
+  //       toast({
+  //         title: 'Unexpected Error',
+  //         status: 'error',
+  //       });
+  //     }
+  //   }
+  // }, [closeModal, townController, toast]);
+
+  // spotifyLogin();
+
+  // const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
+  const id = '1d5bdd45d42c4c92a2a935346a2fc3e2';
+  const secret = '5c47a4ccaa1047ad8ca79e76a21d03f5';
+  // const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
+  // const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
+  // const SPOTIFY_RESPONSE_TYPE = 'token';
+
+  useEffect(() => {
+    async function fetchToken() {
+      const getToken = async () => {
+        try {
+          const response = await fetch('https://accounts.spotify.com/api/token', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Basic ' + base64_encode(id + ':' + secret),
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'grant_type=client_credentials',
+          });
+          const data = await response.json();
+          const auth = data.access_token;
+          console.log(auth);
+          return auth;
+        } catch (error) {
+          console.log(error);
+        }
+      };
+      const auth = await getToken();
+      setToken(() => auth);
+    }
+    fetchToken();
+  }, []);
 
   return (
     <>

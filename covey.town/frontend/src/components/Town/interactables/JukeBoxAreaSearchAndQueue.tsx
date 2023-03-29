@@ -24,6 +24,7 @@ import {
   VStack,
   Grid,
   GridItem,
+  Link,
 } from '@chakra-ui/react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ReactPlayer from 'react-player';
@@ -158,29 +159,29 @@ export function JukeBoxArea({
   //   window.localStorage.removeItem('token');
   // };
 
-  const spotifyLogin = useCallback(async () => {
-    try {
-      await SpotifyController.login();
-      townController.unPause();
-      closeModal();
-    } catch (err) {
-      if (err instanceof Error) {
-        toast({
-          title: 'Unable to create conversation',
-          description: err.toString(),
-          status: 'error',
-        });
-      } else {
-        console.trace(err);
-        toast({
-          title: 'Unexpected Error',
-          status: 'error',
-        });
-      }
-    }
-  }, [closeModal, townController, toast]);
+  // const spotifyLogin = useCallback(async () => {
+  //   try {
+  //     await SpotifyController.login();
+  //     townController.unPause();
+  //     closeModal();
+  //   } catch (err) {
+  //     if (err instanceof Error) {
+  //       toast({
+  //         title: 'Unable to create conversation',
+  //         description: err.toString(),
+  //         status: 'error',
+  //       });
+  //     } else {
+  //       console.trace(err);
+  //       toast({
+  //         title: 'Unexpected Error',
+  //         status: 'error',
+  //       });
+  //     }
+  //   }
+  // }, [closeModal, townController, toast]);
 
-  spotifyLogin();
+  // spotifyLogin();
 
   const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
   const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
@@ -189,12 +190,15 @@ export function JukeBoxArea({
   const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
   const SPOTIFY_RESPONSE_TYPE = 'token';
 
-  const queryParams = QueryString.stringify({
-    client_id: SPOTIFY_CLIENT_ID,
-    response_type: 'code',
-    redirect_uri: SPOTIFY_REDIRECT_URI,
-  });
-  const url = `https://accounts.spotify.com/authorize?${queryParams}`;
+  const scopes = [
+    'streaming',
+    'user-read-email',
+    'user-read-private',
+    'user-library-read',
+    'user-library-modify',
+    'user-read-playback-state',
+    'user-modify-playback-state',
+  ];
 
   return (
     <>
@@ -218,6 +222,16 @@ export function JukeBoxArea({
               placeholder='Search Songs'
             />
           </InputGroup>
+          <Text mt='md'>
+            Get one{' '}
+            <Link
+              isExternal
+              href={`https://accounts.spotify.com/en/authorize?response_type=token&client_id=adaaf209fb064dfab873a71817029e0d&redirect_uri=https:%2F%2Fdeveloper.spotify.com%2Fdocumentation%2Fweb-playback-sdk%2Fquick-start%2F&scope=${scopes.join(
+                '%20',
+              )}&show_dialog=true`}>
+              here
+            </Link>
+          </Text>
           <VStack>
             <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
             <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />

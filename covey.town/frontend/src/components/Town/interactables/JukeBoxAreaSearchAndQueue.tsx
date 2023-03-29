@@ -33,6 +33,8 @@ import JukeBoxAreaController from '../../../classes/JukeBoxAreaController';
 import useTownController from '../../../hooks/useTownController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
 import QueryString from 'qs';
+import { redirectToAuthCodeFlow } from '../../../spotify/authCodeWithPkce';
+import { getSpotifyToken } from '../../../spotify/client_credentials';
 
 const ALLOWED_DRIFT = 3;
 export class MockReactPlayer extends ReactPlayer {
@@ -198,6 +200,9 @@ export function JukeBoxArea({
     'user-read-playback-state',
     'user-modify-playback-state',
   ];
+
+  // redirectToAuthCodeFlow(SPOTIFY_CLIENT_ID);
+  getSpotifyToken();
 
   return (
     <>

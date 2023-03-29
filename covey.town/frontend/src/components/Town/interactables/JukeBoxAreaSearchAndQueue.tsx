@@ -31,6 +31,8 @@ import { useInteractable, useJukeBoxAreaController } from '../../../classes/Town
 import JukeBoxAreaController from '../../../classes/JukeBoxAreaController';
 import useTownController from '../../../hooks/useTownController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
+import SpotifyController from '../../../spotify/SpotifyController';
+import QueryString from 'qs';
 
 const ALLOWED_DRIFT = 3;
 export class MockReactPlayer extends ReactPlayer {
@@ -90,8 +92,12 @@ export function JukeBoxArea({
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
   const [searchValue, setSearchValue] = React.useState('');
-  const handleChange = (event: { target: { value: React.SetStateAction<string> } }) => {
+  const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchValue(event.target.value);
+    // SpotifyController.token('null');
+    // SpotifyController.search(searchValue, SpotifyController.token()).then((res) => {
+    //   console.log(res);
+    // }
   };
 
   const closeModal = useCallback(() => {
@@ -127,6 +133,69 @@ export function JukeBoxArea({
     onOpen();
   }
 
+  const [token, setToken] = useState('');
+
+  // useEffect(() => {
+  //   const hash = window.location.hash;
+  //   let localToken = window.localStorage.getItem('token');
+
+  //   if (!localToken && hash) {
+  //     localToken = hash
+  //       .substring(1)
+  //       .split('&')
+  //       .find(elem => elem.startsWith('access_token'))
+  //       .split('=')[1];
+
+  //     window.location.hash = '';
+  //     window.localStorage.setItem('token', localToken);
+  //   }
+
+  //   setToken(localToken);
+  // }, []);
+
+  // const logout = () => {
+  //   setToken('');
+  //   window.localStorage.removeItem('token');
+  // };
+
+  const spotifyLogin = useCallback(async () => {
+    try {
+      await SpotifyController.login();
+      townController.unPause();
+      closeModal();
+    } catch (err) {
+      if (err instanceof Error) {
+        toast({
+          title: 'Unable to create conversation',
+          description: err.toString(),
+          status: 'error',
+        });
+      } else {
+        console.trace(err);
+        toast({
+          title: 'Unexpected Error',
+          status: 'error',
+        });
+      }
+    }
+  }, [closeModal, townController, toast]);
+
+  spotifyLogin();
+
+  const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
+  const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
+  const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
+  const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
+  const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
+  const SPOTIFY_RESPONSE_TYPE = 'token';
+
+  const queryParams = QueryString.stringify({
+    client_id: SPOTIFY_CLIENT_ID,
+    response_type: 'code',
+    redirect_uri: SPOTIFY_REDIRECT_URI,
+  });
+  const url = `https://accounts.spotify.com/authorize?${queryParams}`;
+
   return (
     <>
       <Modal
@@ -145,7 +214,7 @@ export function JukeBoxArea({
               pr='4.5rem'
               type='tel'
               value={searchValue}
-              onChange={handleChange}
+              onChange={handleSearchChange}
               placeholder='Search Songs'
             />
           </InputGroup>

@@ -95,9 +95,12 @@ export function JukeBoxArea({
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
   const [searchValue, setSearchValue] = React.useState('');
   const [spotifyApiToken, setToken] = useState('');
+  // Current search results JSON Object
+  const [searchResults, setSearchResults] = useState<any>();
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchValue(event.target.value);
     SpotifyController.search(spotifyApiToken, searchValue, 'track', 10).then(res => {
+      setSearchResults(res);
       console.log(res);
     });
   };
@@ -180,9 +183,23 @@ export function JukeBoxArea({
             />
           </InputGroup>
           <VStack>
-            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
+            {/* Map search results response to SearchResults */}
+            {searchResults &&
+              searchResults.tracks &&
+              searchResults.tracks.items &&
+              searchResults.tracks.items.map((item: any) => {
+                return (
+                  // eslint-disable-next-line react/jsx-key
+                  <SearchResult
+                    songTitle={item.name}
+                    songArtist={item.artists[0].name}
+                    songDuration={item.duration_ms}
+                  />
+                );
+              })}
+            {/* <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
+      <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
+      <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' /> */}
           </VStack>
           <ModalFooter></ModalFooter>
         </ModalContent>

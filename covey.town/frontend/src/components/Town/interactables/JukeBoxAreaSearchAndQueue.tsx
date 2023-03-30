@@ -164,9 +164,6 @@ export function JukeBoxArea({
                   />
                 );
               })}
-            {/* <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-      <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-      <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' /> */}
           </VStack>
           <ModalFooter></ModalFooter>
         </ModalContent>

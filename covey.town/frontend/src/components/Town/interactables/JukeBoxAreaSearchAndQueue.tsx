@@ -12,13 +12,18 @@ import {
   useDisclosure,
   useToast,
   VStack,
+  Button,
+  Tooltip,
+  Icon,
 } from '@chakra-ui/react';
+import { BsFillPlayFill } from 'react-icons/bs';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
+import axios from 'axios';
 
 export class MockReactPlayer extends ReactPlayer {
   render(): React.ReactNode {
@@ -35,16 +40,26 @@ export function SearchResult({
   songArtist: string;
   songDuration: string;
 }): JSX.Element {
+  const playClickHandler = () => {
+    SpotifyController.playTrack(songTitle, songArtist);
+  };
   return (
-    <Grid templateRows='repeat(1, 1fr)' templateColumns='repeat(3, 1fr)' gap={50} p='0'>
-      <GridItem colSpan={1} h='10' bg='transparent'>
+    <Grid templateRows='repeat(1, 1fr)' templateColumns='repeat(10, 1fr)' gap='50px' p='0'>
+      <GridItem w='100%' colSpan={5} h='10' bg='transparent'>
         {songTitle}
       </GridItem>
-      <GridItem colSpan={1} h='10' bg='transparent'>
+      <GridItem w='100%' colSpan={2} h='10' bg='transparent'>
         {songArtist}
       </GridItem>
-      <GridItem colSpan={1} h='10' bg='transparent'>
+      <GridItem w='100%' colSpan={1} h='10' bg='transparent'>
         {songDuration}
+      </GridItem>
+      <GridItem w='100%' colSpan={1} h='10' bg='transparent'>
+        <Tooltip label='Play Song' fontSize='md'>
+          <Button colorScheme='teal' variant='solid' onClick={playClickHandler}>
+            <Icon as={BsFillPlayFill} />
+          </Button>
+        </Tooltip>
       </GridItem>
     </Grid>
   );
@@ -111,6 +126,14 @@ export function JukeBoxArea({
       setToken(() => auth);
     }
     getToken();
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests or subscriptions
+      // to avoid updating the state of an unmounted component
+      // Here we're cancelling the fetchData() request
+      const source = axios.CancelToken.source();
+      source.cancel('Component unmounted');
+    };
   }, []);
 
   useEffect(() => {
@@ -125,6 +148,14 @@ export function JukeBoxArea({
       }
     }
     findSongs();
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests or subscriptions
+      // to avoid updating the state of an unmounted component
+      // Here we're cancelling the fetchData() request
+      const source = axios.CancelToken.source();
+      source.cancel('Component unmounted');
+    };
   }, [searchValue, token]);
 
   return (

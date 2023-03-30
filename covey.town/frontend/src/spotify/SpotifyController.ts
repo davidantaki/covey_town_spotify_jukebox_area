@@ -104,4 +104,30 @@ export default class SpotifyController {
       return 'Failed';
     }
   }
+
+  /**
+   * Play a song on Spotify.
+   */
+  public static async playTrack(authToken: string, trackId: string): Promise<unknown> {
+    try {
+      const response = await fetch(`https://api.spotify.com/v1/me/player/play`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          context_uri: 'spotify:album:5ht7ItJgpBH7W6vJ5BqpPr',
+          offset: {
+            position: 5,
+          },
+          position_ms: 0,
+        }),
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return 'Failed';
+    }
+  }
 }

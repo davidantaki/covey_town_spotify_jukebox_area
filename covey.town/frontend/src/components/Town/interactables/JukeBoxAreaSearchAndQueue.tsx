@@ -1,42 +1,25 @@
 import {
-  Button,
-  FormControl,
-  FormLabel,
+  Grid,
+  GridItem,
   Input,
+  InputGroup,
   Modal,
-  ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  useToast,
-  Container,
-  Stack,
-  Text,
-  InputGroup,
-  InputRightElement,
-  InputLeftElement,
   useDisclosure,
-  Image,
-  Box,
-  Badge,
+  useToast,
   VStack,
-  Grid,
-  GridItem,
-  Link,
 } from '@chakra-ui/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
-import JukeBoxAreaController from '../../../classes/JukeBoxAreaController';
 import useTownController from '../../../hooks/useTownController';
-import JukeBoxAreaInteractable from './JukeBoxArea';
-import QueryString from 'qs';
-import { getSpotifyToken } from '../../../spotify/client_credentials';
 import SpotifyController from '../../../spotify/SpotifyController';
+import JukeBoxAreaInteractable from './JukeBoxArea';
 
-const ALLOWED_DRIFT = 3;
 export class MockReactPlayer extends ReactPlayer {
   render(): React.ReactNode {
     return <></>;
@@ -52,17 +35,6 @@ export function SearchResult({
   songArtist: string;
   songDuration: string;
 }): JSX.Element {
-  const property = {
-    imageUrl: 'https://bit.ly/2Z4KKcF',
-    imageAlt: 'Rear view of modern home with pool',
-    beds: 3,
-    baths: 2,
-    title: 'Modern home in city center in the heart of historic Los Angeles',
-    formattedPrice: '$1,900.00',
-    reviewCount: 34,
-    rating: 4,
-  };
-
   return (
     <Grid templateRows='repeat(1, 1fr)' templateColumns='repeat(3, 1fr)' gap={50} p='0'>
       <GridItem colSpan={1} h='10' bg='transparent'>
@@ -87,22 +59,15 @@ export function SearchResult({
 export function JukeBoxArea({
   jukeBoxArea,
 }: {
-  // isOpenInit: boolean;
-  // close: () => void;
   jukeBoxArea: JukeBoxAreaInteractable;
 }): JSX.Element {
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
   const [searchValue, setSearchValue] = React.useState('');
-  const [spotifyApiToken, setToken] = useState('');
   // Current search results JSON Object
   const [searchResults, setSearchResults] = useState<any>();
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchValue(event.target.value);
-    SpotifyController.search(spotifyApiToken, searchValue, 'track', 10).then(res => {
-      setSearchResults(res);
-      console.log(res);
-    });
   };
 
   const closeModal = useCallback(() => {
@@ -138,27 +103,29 @@ export function JukeBoxArea({
     onOpen();
   }
 
-  const spotifyLogin = useCallback(async () => {
-    try {
-      const token = await getSpotifyToken();
-      setToken(token);
-      toast({
-        title: 'Successfully got Spotify API Token',
-        status: 'success',
-      });
-    } catch (err) {
-      console.trace(err);
-      toast({
-        title: 'Error when trying to get Spotify API Token',
-        status: 'error',
-      });
-    }
-  }, [toast]);
+  const [token, setToken] = useState<string>('');
 
-  // Get Spotify API token if it is not already set.
-  if (spotifyApiToken === '') {
-    spotifyLogin();
-  }
+  useEffect(() => {
+    async function getToken() {
+      const auth = await SpotifyController.fetchToken();
+      setToken(() => auth);
+    }
+    getToken();
+  }, []);
+
+  useEffect(() => {
+    async function findSongs() {
+      // only search if there is a search value
+      if (searchValue !== '') {
+        const songs = await SpotifyController.search(token, searchValue, 'track');
+        setSearchResults(songs);
+        console.log(songs);
+      } else {
+        setSearchResults(undefined);
+      }
+    }
+    findSongs();
+  }, [searchValue, token]);
 
   return (
     <>
@@ -197,9 +164,6 @@ export function JukeBoxArea({
                   />
                 );
               })}
-            {/* <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-      <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-      <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' /> */}
           </VStack>
           <ModalFooter></ModalFooter>
         </ModalContent>

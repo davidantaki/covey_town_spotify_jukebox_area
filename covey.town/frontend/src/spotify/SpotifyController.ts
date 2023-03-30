@@ -1,13 +1,15 @@
-import axios from 'axios';
+import { encode as base64_encode } from 'base-64';
 import QueryString from 'qs';
-import { searchPipe, tokenPipe, trackPipe } from './ValidateSpotify';
 
-const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
-const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
-const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
-const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
-const SPOTIFY_RESPONSE_TYPE = 'token';
+// const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
+// const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
+// const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
+// const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
+// const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
+// const SPOTIFY_RESPONSE_TYPE = 'token';
+
+const ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
+const SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
 
 /**
  * Abstraction layer in code to communicate with Spotify API to receive authenication,
@@ -15,59 +17,29 @@ const SPOTIFY_RESPONSE_TYPE = 'token';
  */
 export default class SpotifyController {
   /**
-   * A method to prompt the user to login to their Spotify account
-   * using Spotify's authorization code flow.
+   * This is an example of a basic node.js script that performs
+   * the Client Credentials oAuth2 flow to authenticate against
+   * the Spotify Accounts.
+   *
+   * For more information, read
+   * https://developer.spotify.com/web-api/authorization-guide/#client_credentials_flow
    */
-  public static async login(): Promise<unknown> {
-    const response = axios({
-      method: 'get',
-      url: 'https://accounts.spotify.com/authorize?',
-      params: {
-        client_id: SPOTIFY_CLIENT_ID,
-        response_type: 'code',
-        redirect_uri: SPOTIFY_REDIRECT_URI,
-        state: '34fFs29kd09',
-        scope: 'user-read-private user-read-email',
-      },
-    });
-    console.log(response);
-    return response;
-  }
 
-  /**
-   * This method uses Spotify API method of exchanging the authorization
-   * code for an authentication token to be used to get track info and more.
-   * @param code is an authorization code to be exchanged for token.
-   * @returns an authentication token that can be used to get information from Spotify API.
-   * @throws when the authorization code is invalid or when an unknown error occurs.
-   */
-  public static async token(code: string | null): Promise<unknown> {
-    const response = axios({
-      method: 'post',
-      url: 'https://accounts.spotify.com/api/token',
-      params: {
-        grant_type: 'authorization_code',
-        code,
-        redirect_uri: SPOTIFY_REDIRECT_URI,
-      },
-      headers: {
-        'Authorization': `Basic ${Buffer.from(
-          `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`,
-        ).toString('base64')}`,
-        'content-type': 'application/x-www-form-urlencoded',
-      },
-    })
-      .then(res => {
-        if (res.status === 200) {
-          return tokenPipe(res.data);
-        }
-        return res;
-      })
-      .catch(error => {
-        throw new Error(error);
+  public static async fetchToken(): Promise<string> {
+    try {
+      const response = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Basic ' + base64_encode(ID + ':' + SECRET),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'grant_type=client_credentials',
       });
-    console.log(response);
-    return response;
+      const data = await response.json();
+      return data.access_token;
+    } catch (error) {
+      return '';
+    }
   }
 
   /**
@@ -80,24 +52,19 @@ export default class SpotifyController {
    * is invalid or the auth token is not valid / expired.
    */
   public static async track(authToken: string, trackId: string): Promise<unknown> {
-    const response = axios({
-      method: 'get',
-      url: `https://api.spotify.com/v1/tracks/${trackId}`,
-      headers: {
-        'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(res => {
-        if (res.status === 200) {
-          return trackPipe(res.data);
-        }
-        return res;
-      })
-      .catch(error => {
-        throw new Error(error);
+    try {
+      const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
       });
-    return response;
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return 'Failed';
+    }
   }
 
   /**
@@ -122,23 +89,19 @@ export default class SpotifyController {
       type,
       limit,
     });
-    const response = axios({
-      method: 'get',
-      url: `https://api.spotify.com/v1/search?${queryParams}`,
-      headers: {
-        'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(res => {
-        if (res.status === 200) {
-          return searchPipe(res.data);
-        }
-        return res;
-      })
-      .catch(error => {
-        throw new Error(error);
+
+    try {
+      const response = await fetch(`https://api.spotify.com/v1/search?${queryParams}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
       });
-    return response;
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return 'Failed';
+    }
   }
 }

@@ -115,8 +115,14 @@ export function JukeBoxArea({
 
   useEffect(() => {
     async function findSongs() {
-      const songs = await SpotifyController.search(token, searchValue, 'track');
-      console.log(songs);
+      // only search if there is a search value
+      if (searchValue !== '') {
+        const songs = await SpotifyController.search(token, searchValue, 'track');
+        setSearchResults(songs);
+        console.log(songs);
+      } else {
+        setSearchResults(undefined);
+      }
     }
     findSongs();
   }, [searchValue, token]);

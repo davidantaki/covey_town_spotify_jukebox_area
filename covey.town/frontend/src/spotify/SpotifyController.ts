@@ -28,7 +28,7 @@ export default class SpotifyController {
       return text;
     };
     const state = generateRandomString(16);
-    const scope = 'user-read-private user-read-email';
+    const scope = 'user-read-private user-read-email user-modify-playback-state';
 
     return (
       'https://accounts.spotify.com/authorize?' +
@@ -109,7 +109,7 @@ export default class SpotifyController {
   /**
    * Play a song on Spotify.
    */
-  public static async playTrack(authToken: string, trackId: string): Promise<unknown> {
+  public static async playTrack(authToken: string, trackId: number): Promise<unknown> {
     try {
       const response = await fetch(`https://api.spotify.com/v1/me/player/play`, {
         method: 'PUT',

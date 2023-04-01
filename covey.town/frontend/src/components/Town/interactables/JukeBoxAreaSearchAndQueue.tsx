@@ -24,6 +24,8 @@ import { useInteractable, useJukeBoxAreaController } from '../../../classes/Town
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
+import { Redirect, Route, Switch, useParams } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 
 export class MockReactPlayer extends ReactPlayer {
   render(): React.ReactNode {
@@ -62,6 +64,42 @@ export function SearchResult({
         </Tooltip>
       </GridItem>
     </Grid>
+  );
+}
+
+export function JukeboxSpotifyLogin(): JSX.Element {
+  useEffect(() => {
+    const url = SpotifyController.getAuthorizationLink();
+    console.log(url);
+    window.location.href = url;
+    // window.open(url, '_blank');
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests or subscriptions
+      // to avoid updating the state of an unmounted component
+      // Here we're cancelling the fetchData() request
+      const source = axios.CancelToken.source();
+      source.cancel('Component unmounted');
+    };
+  }, []);
+  return <></>;
+}
+
+export function JukeboxSpotifyProfile(): JSX.Element {
+  const params: any = useParams();
+  const token = params.authToken;
+  console.log(token);
+
+  // if logged in for first time through social auth,
+  // need to save userId & token to local storage
+  window.localStorage.setItem('spotifyAuthToken', JSON.stringify(token));
+
+  // remove id & token from route params after saving to local storage
+  window.history.replaceState(null, '', `${window.location.origin}/user-token`);
+  return (
+    <>
+      <Redirect to='/' />
+    </>
   );
 }
 
@@ -121,25 +159,6 @@ export function JukeBoxArea({
   const [token, setToken] = useState<string>('');
 
   useEffect(() => {
-    // async function getToken() {
-    //   const auth = await SpotifyController.fetchToken();
-    //   setToken(() => auth);
-    // }
-    // getToken();
-    // // Cleanup function
-    // return () => {
-    //   // Cancel any pending requests or subscriptions
-    //   // to avoid updating the state of an unmounted component
-    //   // Here we're cancelling the fetchData() request
-    //   const source = axios.CancelToken.source();
-    //   source.cancel('Component unmounted');
-    // };
-    const url = SpotifyController.getAuthorizationLink();
-    console.log(url);
-    window.open(url, '_blank');
-  }, []);
-
-  useEffect(() => {
     async function findSongs() {
       // only search if there is a search value
       if (searchValue !== '') {
@@ -163,6 +182,17 @@ export function JukeBoxArea({
 
   return (
     <>
+      {/* <BrowserRouter> */}
+      <Switch>
+        <Route exact path='/jukebox-spotify-login' component={JukeboxSpotifyLogin} />
+        <Route
+          path='/jukebox-spotify-login/user-token/:authToken'
+          component={JukeboxSpotifyProfile}
+        />
+        <Redirect to='/jukebox-spotify-login' />
+      </Switch>
+      {/* </BrowserRouter> */}
+
       <Modal
         isOpen={isOpen}
         onClose={() => {

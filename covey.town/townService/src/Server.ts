@@ -14,6 +14,11 @@ import { TownsController } from './town/TownsController';
 import { logError } from './Utils';
 import SpotifyController from './spotify/SpotifyController';
 
+const ID = '97a7d37671c84613aaae12f0d590663a';
+const SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
+const REDIRECT = 'http://localhost:8081/callback';
+const CLIENT_URL = 'http://localhost:3000';
+
 // Create the server instances
 const app = Express();
 app.use(CORS());
@@ -69,20 +74,26 @@ app.use(
   },
 );
 
-const ID = '97a7d37671c84613aaae12f0d590663a';
-const SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-const REDIRECT = 'http://localhost:8081/callback';
-
 /**
  * Callback endpoint where the "redirect uri" is located and the user can
  * go to. This is where we get the exchange the authorization code for the
  * authentication token.
+ *
+ * Inspiration from here:
+ * https://stackoverflow.com/questions/49788580/how-to-redirect-to-correct-client-route-after-social-auth-with-passport-react
+ * http://gregtrowbridge.com/node-authentication-with-google-oauth-part2-jwts/
  */
 app.get('/callback', async (req, res) => {
   const code = (req.query.code as string) || null;
-  console.log(code);
-  const tokenInformation = await SpotifyController.token(code);
-  res.send(tokenInformation);
+  const response: any = await SpotifyController.token(code);
+  if (response.status !== 200) {
+    res.send(`Error: ${res}`);
+    return;
+  }
+  console.log(response);
+  const token = response.data.access_token;
+  res.redirect(`${CLIENT_URL}/jukebox-spotify-login/user-token/${token}`);
+  console.log(`token:${token}`);
 });
 
 // Start the configured server, defaulting to port 8081 if $PORT is not set

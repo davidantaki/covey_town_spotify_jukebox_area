@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import QueryString from 'qs';
 import { searchPipe, tokenPipe, trackPipe } from './ValidateSpotify';
 
@@ -39,7 +39,7 @@ export default class SpotifyController {
    * @throws when the authorization code is invalid or when an unknown error occurs.
    */
   public static async token(code: string | null): Promise<unknown> {
-    const response = axios({
+    const res = await axios({
       method: 'post',
       url: 'https://accounts.spotify.com/api/token',
       params: {
@@ -53,19 +53,8 @@ export default class SpotifyController {
         ).toString('base64')}`,
         'content-type': 'application/x-www-form-urlencoded',
       },
-    })
-      .then(res => {
-        if (res.status === 200) {
-          return tokenPipe(res.data);
-        }
-        return res;
-      })
-      .catch(error => {
-        console.log('hello');
-        console.log(error);
-        throw new Error(error);
-      });
-    return response;
+    });
+    return res;
   }
 
   /**

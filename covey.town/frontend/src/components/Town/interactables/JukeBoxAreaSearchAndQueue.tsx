@@ -67,32 +67,6 @@ export function SearchResult({
   );
 }
 
-const useLocalStorage = (
-  key: string,
-  initialState: string,
-): [string, (newValue: string) => void] => {
-  const [value, setValue] = useState(() => {
-    const storedValue = localStorage.getItem(key);
-    return storedValue !== null ? storedValue : initialState;
-  });
-
-  useEffect(() => {
-    localStorage.setItem(key, value);
-  }, [key, value]);
-
-  const updatedSetValue = (newValue: string) => {
-    if (newValue === initialState || typeof newValue === 'undefined') {
-      localStorage.removeItem(key);
-      setValue(initialState);
-    } else {
-      localStorage.setItem(key, newValue);
-      setValue(newValue);
-    }
-  };
-
-  return [value, updatedSetValue];
-};
-
 /**
  * Component that handles the login to spotify and saving the token to local storage
  * if the user is not logged in to spotify.
@@ -173,9 +147,8 @@ export function JukeBoxArea({
 }): JSX.Element {
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
-  // const [spotifyAuthToken, setSpotifyAuthToken] = useState<string>('');
   const [searchValue, setSearchValue] = React.useState('');
-  const [spotifyAuthToken, setSpotifyAuthToken] = useLocalStorage('spotifyAuthToken', '');
+  const [spotifyAuthToken, setSpotifyAuthToken] = useState<string>('');
   // Current search results JSON Object
   const [searchResults, setSearchResults] = useState<any>();
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {

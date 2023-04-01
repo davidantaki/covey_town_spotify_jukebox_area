@@ -71,8 +71,8 @@ export function JukeboxSpotifyLogin(): JSX.Element {
   useEffect(() => {
     const url = SpotifyController.getAuthorizationLink();
     console.log(url);
-    window.location.href = url;
-    // window.open(url, '_blank');
+    // window.location.href = url;
+    window.open(url, '_blank');
     // Cleanup function
     return () => {
       // Cancel any pending requests or subscriptions
@@ -94,8 +94,23 @@ export function JukeboxSpotifyProfile(): JSX.Element {
   // need to save userId & token to local storage
   window.localStorage.setItem('spotifyAuthToken', JSON.stringify(token));
 
+  useEffect(() => {
+    const url = SpotifyController.getAuthorizationLink();
+    console.log(url);
+    // window.location.href = url;
+    window.open(url, '_blank');
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests or subscriptions
+      // to avoid updating the state of an unmounted component
+      // Here we're cancelling the fetchData() request
+      const source = axios.CancelToken.source();
+      source.cancel('Component unmounted');
+    };
+  }, []);
+
   // remove id & token from route params after saving to local storage
-  window.history.replaceState(null, '', `${window.location.origin}/user-token`);
+  // window.history.replaceState(null, '', `${window.location.origin}/user-token`);
   return (
     <>
       <Redirect to='/' />
@@ -183,16 +198,18 @@ export function JukeBoxArea({
   return (
     <>
       {/* <BrowserRouter> */}
-      <Switch>
-        <Route exact path='/jukebox-spotify-login' component={JukeboxSpotifyLogin} />
+      {/* <Switch>
+        <Route exact path='/' component={JukeboxSpotifyLogin} />
         <Route
           path='/jukebox-spotify-login/user-token/:authToken'
           component={JukeboxSpotifyProfile}
         />
-        <Redirect to='/jukebox-spotify-login' />
-      </Switch>
+        <Redirect to='/' />
+      </Switch> */}
       {/* </BrowserRouter> */}
 
+      <JukeboxSpotifyLogin />
+      {/* <Redirect to='/jukebox-spotify-login' /> */}
       <Modal
         isOpen={isOpen}
         onClose={() => {

@@ -2,7 +2,7 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import assert from 'assert';
 import React, { useCallback, useState } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 import './App.css';
 import TownController from './classes/TownController';
 import { ChatProvider } from './components/VideoCall/VideoFrontend/components/ChatProvider';
@@ -18,6 +18,10 @@ import TownMap from './components/Town/TownMap';
 import TownControllerContext from './contexts/TownControllerContext';
 import LoginControllerContext from './contexts/LoginControllerContext';
 import { TownsServiceClient } from './generated/client';
+import {
+  JukeboxSpotifyLogin,
+  JukeboxSpotifyProfile,
+} from './components/Town/interactables/JukeBoxAreaSearchAndQueue';
 
 function App() {
   const [townController, setTownController] = useState<TownController | null>(null);
@@ -62,7 +66,17 @@ export default function AppStateWrapper(): JSX.Element {
       <ChakraProvider>
         <MuiThemeProvider theme={theme}>
           <AppStateProvider>
-            <App />
+            <Switch>
+              <Route exact path='/jukebox-spotify-login' component={JukeboxSpotifyLogin} />
+              <Route
+                path='/jukebox-spotify-login/user-token/:authToken'
+                component={JukeboxSpotifyProfile}
+              />
+              <Route path='/' component={App} />
+              <Route path='*'>
+                <Redirect to='/' />
+              </Route>
+            </Switch>
           </AppStateProvider>
         </MuiThemeProvider>
       </ChakraProvider>

@@ -1,6 +1,8 @@
 import {
+  Button,
   Grid,
   GridItem,
+  Icon,
   Input,
   InputGroup,
   Modal,
@@ -9,21 +11,19 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Tooltip,
   useDisclosure,
   useToast,
   VStack,
-  Button,
-  Tooltip,
-  Icon,
 } from '@chakra-ui/react';
-import { BsFillPlayFill } from 'react-icons/bs';
+import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
+import { BsFillPlayFill } from 'react-icons/bs';
 import ReactPlayer from 'react-player';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
-import axios from 'axios';
 
 export class MockReactPlayer extends ReactPlayer {
   render(): React.ReactNode {
@@ -121,19 +121,22 @@ export function JukeBoxArea({
   const [token, setToken] = useState<string>('');
 
   useEffect(() => {
-    async function getToken() {
-      const auth = await SpotifyController.fetchToken();
-      setToken(() => auth);
-    }
-    getToken();
-    // Cleanup function
-    return () => {
-      // Cancel any pending requests or subscriptions
-      // to avoid updating the state of an unmounted component
-      // Here we're cancelling the fetchData() request
-      const source = axios.CancelToken.source();
-      source.cancel('Component unmounted');
-    };
+    // async function getToken() {
+    //   const auth = await SpotifyController.fetchToken();
+    //   setToken(() => auth);
+    // }
+    // getToken();
+    // // Cleanup function
+    // return () => {
+    //   // Cancel any pending requests or subscriptions
+    //   // to avoid updating the state of an unmounted component
+    //   // Here we're cancelling the fetchData() request
+    //   const source = axios.CancelToken.source();
+    //   source.cancel('Component unmounted');
+    // };
+    const url = SpotifyController.getAuthorizationLink();
+    console.log(url);
+    window.open(url, '_blank');
   }, []);
 
   useEffect(() => {

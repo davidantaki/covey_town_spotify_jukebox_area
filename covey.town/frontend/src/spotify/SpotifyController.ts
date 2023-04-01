@@ -1,16 +1,8 @@
-import { encode as base64_encode } from 'base-64';
 import QueryString from 'qs';
 
-// const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
-// const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
-// const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-// const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
-// const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
-// const SPOTIFY_RESPONSE_TYPE = 'token';
-
-const ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
+const ID = '97a7d37671c84613aaae12f0d590663a';
 const SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-
+const REDIRECT = 'http://localhost:8081/callback';
 /**
  * Abstraction layer in code to communicate with Spotify API to receive authenication,
  * track information, and more.
@@ -25,21 +17,29 @@ export default class SpotifyController {
    * https://developer.spotify.com/web-api/authorization-guide/#client_credentials_flow
    */
 
-  public static async fetchToken(): Promise<string> {
-    try {
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Basic ' + base64_encode(ID + ':' + SECRET),
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: 'grant_type=client_credentials',
-      });
-      const data = await response.json();
-      return data.access_token;
-    } catch (error) {
-      return '';
-    }
+  public static getAuthorizationLink(): string {
+    const generateRandomString = (length: number) => {
+      let text = '';
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+      for (let i = 0; i < length; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+      return text;
+    };
+    const state = generateRandomString(16);
+    const scope = 'user-read-private user-read-email';
+
+    return (
+      'https://accounts.spotify.com/authorize?' +
+      QueryString.stringify({
+        response_type: 'code',
+        client_id: ID,
+        scope: scope,
+        redirect_uri: REDIRECT,
+        state: state,
+      })
+    );
   }
 
   /**
@@ -63,6 +63,7 @@ export default class SpotifyController {
       const data = await response.json();
       return data;
     } catch (error) {
+      console.log('failed');
       return 'Failed';
     }
   }

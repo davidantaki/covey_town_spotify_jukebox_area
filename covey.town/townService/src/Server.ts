@@ -7,7 +7,6 @@ import { ValidateError } from 'tsoa';
 import fs from 'fs/promises';
 import { Server as SocketServer } from 'socket.io';
 import * as dotenv from 'dotenv';
-import QueryString from 'qs';
 import { RegisterRoutes } from '../generated/routes';
 import TownsStore from './lib/TownsStore';
 import { ClientToServerEvents, ServerToClientEvents } from './types/CoveyTownSocket';
@@ -70,21 +69,9 @@ app.use(
   },
 );
 
-const { SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI } = process.env;
-
-/**
- * Endpoint to allow users to login. Going to http://localhost:8081/login will bring you to
- * Spotify login page, where after granting your credentials, it redirects the page to somewhere
- * that gives the "authorization" code. This can be refactored in the future.
- */
-app.get('/login', (_req, res) => {
-  const queryParams = QueryString.stringify({
-    client_id: SPOTIFY_CLIENT_ID,
-    response_type: 'code',
-    redirect_uri: SPOTIFY_REDIRECT_URI,
-  });
-  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
-});
+const ID = '97a7d37671c84613aaae12f0d590663a';
+const SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
+const REDIRECT = 'http://localhost:8081/callback';
 
 /**
  * Callback endpoint where the "redirect uri" is located and the user can
@@ -93,6 +80,7 @@ app.get('/login', (_req, res) => {
  */
 app.get('/callback', async (req, res) => {
   const code = (req.query.code as string) || null;
+  console.log(code);
   const tokenInformation = await SpotifyController.token(code);
   res.send(tokenInformation);
 });

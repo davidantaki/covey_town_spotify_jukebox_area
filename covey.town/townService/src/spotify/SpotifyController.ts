@@ -2,12 +2,9 @@ import axios from 'axios';
 import QueryString from 'qs';
 import { searchPipe, tokenPipe, trackPipe } from './ValidateSpotify';
 
-const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
-const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
-const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
-const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
-const SPOTIFY_RESPONSE_TYPE = 'token';
+const SPOTIFY_CLIENT_ID = '97a7d37671c84613aaae12f0d590663a';
+const SPOTIFY_CLIENT_SECRET = '3e721586b8c64aa48ecdf01db5d3e6c6';
+const SPOTIFY_REDIRECT_URI = 'http://localhost:8081/callback';
 
 /**
  * Abstraction layer in code to communicate with Spotify API to receive authenication,
@@ -18,21 +15,21 @@ export default class SpotifyController {
    * A method to prompt the user to login to their Spotify account
    * using Spotify's authorization code flow.
    */
-  public static async login(): Promise<unknown> {
-    const response = axios({
-      method: 'get',
-      url: 'https://accounts.spotify.com/authorize?',
-      params: {
-        client_id: SPOTIFY_CLIENT_ID,
-        response_type: 'code',
-        redirect_uri: SPOTIFY_REDIRECT_URI,
-        state: '34fFs29kd09',
-        scope: 'user-read-private user-read-email',
-      },
-    });
-    console.log(response);
-    return response;
-  }
+  // public static async login(): Promise<unknown> {
+  //   const response = axios({
+  //     method: 'get',
+  //     url: 'https://accounts.spotify.com/authorize?',
+  //     params: {
+  //       client_id: SPOTIFY_CLIENT_ID,
+  //       response_type: 'code',
+  //       redirect_uri: SPOTIFY_REDIRECT_URI,
+  //       state: '34fFs29kd09',
+  //       scope: 'user-read-private user-read-email',
+  //     },
+  //   });
+  //   console.log(response);
+  //   return response;
+  // }
 
   /**
    * This method uses Spotify API method of exchanging the authorization
@@ -64,9 +61,10 @@ export default class SpotifyController {
         return res;
       })
       .catch(error => {
+        console.log('hello');
+        console.log(error);
         throw new Error(error);
       });
-    console.log(response);
     return response;
   }
 

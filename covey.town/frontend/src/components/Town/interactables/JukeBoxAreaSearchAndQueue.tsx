@@ -71,7 +71,7 @@ export function JukeboxSpotifyLogin(): JSX.Element {
   useEffect(() => {
     const url = SpotifyController.getAuthorizationLink();
     console.log(url);
-    // window.location.href = url;
+    // Open in new window
     window.open(url, '_blank');
     // Cleanup function
     return () => {
@@ -85,37 +85,14 @@ export function JukeboxSpotifyLogin(): JSX.Element {
   return <></>;
 }
 
-export function JukeboxSpotifyProfile(): JSX.Element {
+export function JukeboxSpotifySaveAuthToken(): JSX.Element {
   const params: any = useParams();
   const token = params.authToken;
-  console.log(token);
-
-  // if logged in for first time through social auth,
-  // need to save userId & token to local storage
   window.localStorage.setItem('spotifyAuthToken', JSON.stringify(token));
-
-  useEffect(() => {
-    const url = SpotifyController.getAuthorizationLink();
-    console.log(url);
-    // window.location.href = url;
-    window.open(url, '_blank');
-    // Cleanup function
-    return () => {
-      // Cancel any pending requests or subscriptions
-      // to avoid updating the state of an unmounted component
-      // Here we're cancelling the fetchData() request
-      const source = axios.CancelToken.source();
-      source.cancel('Component unmounted');
-    };
-  }, []);
-
   // remove id & token from route params after saving to local storage
-  // window.history.replaceState(null, '', `${window.location.origin}/user-token`);
-  return (
-    <>
-      <Redirect to='/' />
-    </>
-  );
+  window.history.replaceState(null, '', `${window.location.origin}/user-token`);
+  window.close();
+  return <></>;
 }
 
 /**
@@ -131,6 +108,7 @@ export function JukeBoxArea({
 }): JSX.Element {
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
+  const [spotifyAuthToken, setSpotifyAuthToken] = useState<string>('');
   const [searchValue, setSearchValue] = React.useState('');
   // Current search results JSON Object
   const [searchResults, setSearchResults] = useState<any>();
@@ -195,62 +173,70 @@ export function JukeBoxArea({
     };
   }, [searchValue, token]);
 
-  return (
-    <>
-      {/* <BrowserRouter> */}
-      {/* <Switch>
-        <Route exact path='/' component={JukeboxSpotifyLogin} />
-        <Route
-          path='/jukebox-spotify-login/user-token/:authToken'
-          component={JukeboxSpotifyProfile}
-        />
-        <Redirect to='/' />
-      </Switch> */}
-      {/* </BrowserRouter> */}
-
-      <JukeboxSpotifyLogin />
-      {/* <Redirect to='/jukebox-spotify-login' /> */}
-      <Modal
-        isOpen={isOpen}
-        onClose={() => {
-          closeModal();
-          townController.interactEnd(jukeBoxArea);
-        }}
-        size={'full'}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>JukeBox</ModalHeader>
-          <ModalCloseButton />
-          <InputGroup>
-            <Input
-              pr='4.5rem'
-              type='tel'
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder='Search Songs'
-            />
-          </InputGroup>
-          <VStack>
-            {/* Map search results response to SearchResults */}
-            {searchResults &&
-              searchResults.tracks &&
-              searchResults.tracks.items &&
-              searchResults.tracks.items.map((item: any) => {
-                return (
-                  // eslint-disable-next-line react/jsx-key
-                  <SearchResult
-                    songTitle={item.name}
-                    songArtist={item.artists[0].name}
-                    songDuration={item.duration_ms}
-                  />
-                );
-              })}
-          </VStack>
-          <ModalFooter></ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
-  );
+  if (spotifyAuthToken === '') {
+    const authToken = window.localStorage.getItem('spotifyAuthToken');
+    if (authToken) {
+      setSpotifyAuthToken(JSON.parse(authToken));
+    } else {
+      return <JukeboxSpotifyLogin />;
+    }
+  } else {
+    return (
+      <>
+        {/* <BrowserRouter> */}
+        {/* <Switch>
+          <Route exact path='/' component={JukeboxSpotifyLogin} />
+          <Route
+            path='/jukebox-spotify-login/user-token/:authToken'
+            component={JukeboxSpotifyProfile}
+          />
+          <Redirect to='/' />
+        </Switch> */}
+        {/* </BrowserRouter> */}
+        {/* <Redirect to='/jukebox-spotify-login' /> */}
+        <Modal
+          isOpen={isOpen}
+          onClose={() => {
+            closeModal();
+            townController.interactEnd(jukeBoxArea);
+          }}
+          size={'full'}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>JukeBox</ModalHeader>
+            <ModalCloseButton />
+            <InputGroup>
+              <Input
+                pr='4.5rem'
+                type='tel'
+                value={searchValue}
+                onChange={handleSearchChange}
+                placeholder='Search Songs'
+              />
+            </InputGroup>
+            <VStack>
+              {/* Map search results response to SearchResults */}
+              {searchResults &&
+                searchResults.tracks &&
+                searchResults.tracks.items &&
+                searchResults.tracks.items.map((item: any) => {
+                  return (
+                    // eslint-disable-next-line react/jsx-key
+                    <SearchResult
+                      songTitle={item.name}
+                      songArtist={item.artists[0].name}
+                      songDuration={item.duration_ms}
+                    />
+                  );
+                })}
+            </VStack>
+            <ModalFooter></ModalFooter>
+          </ModalContent>
+        </Modal>
+      </>
+    );
+  }
+  return <></>;
 }
 
 /**

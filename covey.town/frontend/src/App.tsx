@@ -20,7 +20,7 @@ import LoginControllerContext from './contexts/LoginControllerContext';
 import { TownsServiceClient } from './generated/client';
 import {
   JukeboxSpotifyLogin,
-  JukeboxSpotifyProfile,
+  JukeboxSpotifySaveAuthToken,
 } from './components/Town/interactables/JukeBoxAreaSearchAndQueue';
 
 function App() {
@@ -69,8 +69,8 @@ export default function AppStateWrapper(): JSX.Element {
             <Switch>
               <Route exact path='/jukebox-spotify-login' component={JukeboxSpotifyLogin} />
               <Route
-                path='/jukebox-spotify-login/user-token/:authToken'
-                component={JukeboxSpotifyProfile}
+                path='/jukebox-spotify-login/save-auth-token/:authToken'
+                component={JukeboxSpotifySaveAuthToken}
               />
               <Route path='/' component={App} />
               <Route path='*'>

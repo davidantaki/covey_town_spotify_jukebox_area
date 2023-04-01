@@ -90,10 +90,10 @@ app.get('/callback', async (req, res) => {
     res.send(`Error: ${res}`);
     return;
   }
-  console.log(response);
+  // console.log(response);
   const token = response.data.access_token;
-  res.redirect(`${CLIENT_URL}/jukebox-spotify-login/user-token/${token}`);
-  console.log(`token:${token}`);
+  res.redirect(`${CLIENT_URL}/jukebox-spotify-login/save-auth-token/${token}`);
+  // console.log(`token:${token}`);
 });
 
 // Start the configured server, defaulting to port 8081 if $PORT is not set

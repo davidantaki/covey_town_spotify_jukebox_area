@@ -47,7 +47,11 @@ export function SearchResult({
 }): JSX.Element {
   const playClickHandler = async () => {
     const token = localStorage.getItem('spotifyAuthToken');
-    if (token) await SpotifyController.playTrack(token.slice(1, -1), songUri);
+    if (token) {
+      const trueToken = token.slice(1, -1);
+      console.log(trueToken);
+      await SpotifyController.playTrack(trueToken, songUri);
+    }
   };
   return (
     <Grid
@@ -210,7 +214,11 @@ export function JukeBoxArea({
 
   const findSongs = async () => {
     if (searchValue) {
-      const songs = await SpotifyController.search(spotifyAuthToken, searchValue, 'track');
+      const songs = await SpotifyController.search(
+        spotifyAuthToken.slice(1, -1),
+        searchValue,
+        'track',
+      );
       setSearchResults(songs);
     } else {
       setSearchResults('');

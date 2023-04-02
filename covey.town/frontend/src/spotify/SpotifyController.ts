@@ -28,7 +28,8 @@ export default class SpotifyController {
       return text;
     };
     const state = generateRandomString(16);
-    const scope = 'user-read-private user-read-email user-modify-playback-state';
+    const scope =
+      'user-read-private user-read-email user-modify-playback-state user-read-playback-state';
 
     return (
       'https://accounts.spotify.com/authorize?' +
@@ -110,6 +111,9 @@ export default class SpotifyController {
    * Play a song on Spotify.
    */
   public static async playTrack(authToken: string, trackUri: string): Promise<unknown> {
+    const devices = await this.getDevices(authToken);
+    const deviceId = devices[0].id;
+    // console.log(deviceId);
     try {
       const response = await fetch(`https://api.spotify.com/v1/me/player/play`, {
         method: 'PUT',
@@ -118,13 +122,31 @@ export default class SpotifyController {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          uris: ['spotify:track:0w7JPlp7eEQI2EKW3ayXrv'],
+          deviceId,
+          uris: [trackUri],
         }),
       });
       const data = await response.json();
       return data;
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  static async getDevices(authToken: string): Promise<{ id: string }[]> {
+    try {
+      const response = await fetch(`https://api.spotify.com/v1/me/player/devices`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      return data.devices;
+    } catch (error) {
+      console.log(error);
+      throw Error('error');
     }
   }
 }

@@ -38,17 +38,18 @@ export function SearchResult({
   songTitle,
   songArtist,
   songDuration,
-  songId,
+  songUri,
 }: {
   songTitle: string;
   songArtist: string;
   songDuration: string;
-  songId: number;
+  songUri: string;
 }): JSX.Element {
   const playClickHandler = async () => {
+    console.log(songUri);
     await SpotifyController.playTrack(
       'BQBxHsBC1f5rTv7qMf6EnfznDBuuervEELO-hJsvnR6qbe1Rb6GCB7mggyUekKRx3GZwENCfoecSOzvH5jr1KSfkGiadYWMscbwwxroYP1gxq4ev3LDty5y568qpdZrYg-wIaYRhmtl7fPkCcRA8Lns4_8ur5GfGJiEJuXxU5HGgZ9avWiJAR8M9OqI1ZCc',
-      songId,
+      songUri,
     );
   };
   return (

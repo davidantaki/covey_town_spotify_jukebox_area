@@ -336,30 +336,36 @@ export function JukeBoxArea({
   const [spotifyAuthToken, setSpotifyAuthToken] = useState<string>('');
   // Current search results JSON Object
   const [searchResults, setSearchResults] = useState<any>();
+  const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [queue, setQueue] = useState(jukeBoxAreaController.queue);
+
+  // Function to update queue
+  const updateQueue = (newQueue: Song[]) => {
+    setQueue(newQueue);
+    jukeBoxAreaController.queue = newQueue;
+  };
+
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchValue(event.target.value);
   };
   const closeModal = useCallback(() => {
     townController.unPause();
   }, [townController]);
-  const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [queue, setQueue] = useState(jukeBoxAreaController.queue);
-  const addSongToQueue = (song: Song) => {
-    setQueue([...queue, song]);
-  };
 
   const [timeSeconds, setSeconds] = useState<number>(0);
   useEffect(() => {
-    const getTime = () => {
-      const time = Date.now();
-      setSeconds(Math.floor((time / 1000) % 60));
-    };
+    if (!isOpen) {
+      const getTime = () => {
+        const time = Date.now();
+        setSeconds(Math.floor((time / 1000) % 60));
+      };
 
-    const interval = setInterval(() => getTime(), 1000);
-    console.log('interval: ', interval);
-    return () => clearInterval(interval);
-  }, []);
+      const interval = setInterval(() => getTime(), 1000);
+      console.log('interval: ', interval);
+      return () => clearInterval(interval);
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (isOpen) {
@@ -404,13 +410,23 @@ export function JukeBoxArea({
   const upvoteSong = (index: number) => {
     const updatedQueue = [...queue];
     updatedQueue[index].upvotes += 1;
-    setQueue(updatedQueue);
+    updateQueue(updatedQueue);
+    townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
   };
 
   const downvoteSong = (index: number) => {
     const updatedQueue = [...queue];
     updatedQueue[index].downvotes += 1;
-    setQueue(updatedQueue);
+    updateQueue(updatedQueue);
+    townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
+  };
+
+  const addSongToQueue = (song: Song) => {
+    const updatedQueue = [...queue, song];
+    updateQueue(updatedQueue);
+    // Console log new queue
+    console.log('New Queue: ', queue);
+    townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
   };
 
   const netVotes = (song: Song) => song.upvotes - song.downvotes;

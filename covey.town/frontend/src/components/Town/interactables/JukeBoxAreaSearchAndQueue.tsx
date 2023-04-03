@@ -20,13 +20,14 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
-import { BsFillPlayFill } from 'react-icons/bs';
+import { BsFillPlayFill, BsPlusCircleFill } from 'react-icons/bs';
 import ReactPlayer from 'react-player';
 import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
 // import { Song, createSong } from '../../../types/CoveyTownSocket';
+// import { ViewingArea as ViewingAreaModel } from '../../../types/CoveyTownSocket';
 import JukeBoxAreaInteractable from './JukeBoxArea';
 
 export interface Song {
@@ -102,6 +103,13 @@ export function SearchResult({
         <Tooltip label='Play Song' fontSize='md'>
           <Button colorScheme='teal' variant='solid' onClick={playClickHandler}>
             <Icon as={BsFillPlayFill} />
+          </Button>
+        </Tooltip>
+      </GridItem>
+      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
+        <Tooltip label='Add To Queue' fontSize='md'>
+          <Button colorScheme='teal' variant='solid' onClick={playClickHandler}>
+            <Icon as={BsPlusCircleFill} />
           </Button>
         </Tooltip>
       </GridItem>
@@ -263,17 +271,17 @@ export function JukeBoxArea({
   }, [townController, isOpen]);
   //TODO:john might just delete this
   useEffect(() => {
-    const setQeueue = (q: Song[] | undefined) => {
+    const setQueueListener = (q: Song[] | undefined) => {
       if (!q) {
         townController.interactableEmitter.emit('endIteraction', jukeBoxAreaController);
       } else {
         setQueue(q);
       }
     };
-    // jukeBoxAreaController.addListener('jukeBoxQueueChange', setQueue);
-    // return () => {
-    //   jukeBoxAreaController.removeListener('jukeBoxQueueChange', setQueue);
-    // };
+    jukeBoxAreaController.addListener('jukeBoxQueueChange', setQueueListener);
+    return () => {
+      jukeBoxAreaController.removeListener('jukeBoxQueueChange', setQueueListener);
+    };
   }, [jukeBoxAreaController, townController]);
 
   // set is open to true if it is false

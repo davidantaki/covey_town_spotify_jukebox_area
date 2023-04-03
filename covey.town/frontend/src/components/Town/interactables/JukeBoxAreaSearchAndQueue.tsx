@@ -252,8 +252,8 @@ export function SearchAndQueue({
   searchValue: string;
   handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   findSongs: () => void;
-  upvoteSong: (index: number) => void;
-  downvoteSong: (index: number) => void;
+  upvoteSong: (songId: string) => void;
+  downvoteSong: (songId: string) => void;
   searchResults: any;
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
@@ -305,12 +305,12 @@ export function SearchAndQueue({
       </GridItem>
       <GridItem>
         <VStack>
-          {sortedQueue.map((song: Song, index: number) => (
+          {sortedQueue.map((song: Song) => (
             <QueueItem
               key={song.spotifyId}
               song={song}
-              onUpvote={() => upvoteSong(index)}
-              onDownvote={() => downvoteSong(index)}
+              onUpvote={() => upvoteSong(song.spotifyId)}
+              onDownvote={() => downvoteSong(song.spotifyId)}
             />
           ))}
         </VStack>
@@ -374,7 +374,6 @@ export function JukeBoxArea({
       townController.unPause();
     }
   }, [townController, isOpen]);
-  //TODO:john might just delete this
   useEffect(() => {
     const setQueueListener = (q: Song[] | undefined) => {
       if (!q) {
@@ -407,17 +406,25 @@ export function JukeBoxArea({
     }
   };
 
-  const upvoteSong = (index: number) => {
+  const upvoteSong = (songId: string) => {
     const updatedQueue = [...queue];
-    updatedQueue[index].upvotes += 1;
-    updateQueue(updatedQueue);
+    updatedQueue.forEach((song, index) => {
+      if (song.spotifyId === songId) {
+        updatedQueue[index] = { ...song, upvotes: song.upvotes + 1 };
+      }
+    });
+    setQueue(updatedQueue);
     townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
   };
 
-  const downvoteSong = (index: number) => {
+  const downvoteSong = (songId: string) => {
     const updatedQueue = [...queue];
-    updatedQueue[index].downvotes += 1;
-    updateQueue(updatedQueue);
+    updatedQueue.forEach((song, index) => {
+      if (song.spotifyId === songId) {
+        updatedQueue[index] = { ...song, downvotes: song.downvotes + 1 };
+      }
+    });
+    setQueue(updatedQueue);
     townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
   };
 

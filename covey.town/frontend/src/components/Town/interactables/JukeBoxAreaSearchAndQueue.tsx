@@ -69,11 +69,13 @@ export function SearchResult({
   songArtist,
   songDuration,
   songUri,
+  addSongToQueueFunc,
 }: {
   songTitle: string;
   songArtist: string;
   songDuration: string;
   songUri: string;
+  addSongToQueueFunc: (song: Song) => void;
 }): JSX.Element {
   const playClickHandler = async () => {
     const token = localStorage.getItem('spotifyAuthToken');
@@ -83,6 +85,20 @@ export function SearchResult({
       await SpotifyController.playTrack(trueToken, songUri);
     }
   };
+  const addSongToQueueClickHandler = async () => {
+    // Great a song object from this search result
+    const song: Song = {
+      title: songTitle,
+      artists: [songArtist],
+      spotifyId: songUri,
+      addedBy: 'test',
+      upvotes: 0,
+      downvotes: 0,
+      songJson: {},
+    };
+    addSongToQueueFunc(song);
+  };
+
   return (
     <Grid
       templateRows='repeat(1, 1fr)'
@@ -108,7 +124,7 @@ export function SearchResult({
       </GridItem>
       <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
         <Tooltip label='Add To Queue' fontSize='md'>
-          <Button colorScheme='teal' variant='solid' onClick={playClickHandler}>
+          <Button colorScheme='teal' variant='solid' onClick={addSongToQueueClickHandler}>
             <Icon as={BsPlusCircleFill} />
           </Button>
         </Tooltip>
@@ -249,6 +265,9 @@ export function JukeBoxArea({
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [queue, setQueue] = useState(jukeBoxAreaController.queue);
+  const addSongToQueue = (song: Song) => {
+    setQueue([...queue, song]);
+  };
 
   const [timeSeconds, setSeconds] = useState<number>(0);
   useEffect(() => {
@@ -302,10 +321,10 @@ export function JukeBoxArea({
     }
   };
 
-  const addToQueue = (songJson: any) => {
-    const newSong = createSong('playerId', songJson);
-    setQueue([...queue, newSong]);
-  };
+  // const addToQueue = (songJson: any) => {
+  //   const newSong = createSong('playerId', songJson);
+  //   setQueue([...queue, newSong]);
+  // };
 
   const upvoteSong = (index: number) => {
     const updatedQueue = [...queue];
@@ -387,6 +406,7 @@ export function JukeBoxArea({
                   songArtist={item.artists[0].name}
                   songDuration={item.duration_ms}
                   songUri={item.uri}
+                  addSongToQueueFunc={addSongToQueue}
                 />
               );
             })}

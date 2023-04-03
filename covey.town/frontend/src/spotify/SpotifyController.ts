@@ -112,8 +112,8 @@ export default class SpotifyController {
    */
   public static async playTrack(authToken: string, trackUri: string): Promise<unknown> {
     const devices = await this.getDevices(authToken);
+    // needs to be bolstered
     const deviceId = devices[0].id;
-    // console.log(deviceId);
     try {
       const response = await fetch(`https://api.spotify.com/v1/me/player/play`, {
         method: 'PUT',

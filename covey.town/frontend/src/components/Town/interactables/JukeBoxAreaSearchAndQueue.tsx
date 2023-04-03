@@ -49,7 +49,6 @@ export function SearchResult({
     const token = localStorage.getItem('spotifyAuthToken');
     if (token) {
       const trueToken = token.slice(1, -1);
-      console.log(trueToken);
       await SpotifyController.playTrack(trueToken, songUri);
     }
   };

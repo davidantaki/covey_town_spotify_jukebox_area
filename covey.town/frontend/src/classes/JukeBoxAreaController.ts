@@ -39,7 +39,7 @@ export type JukeBoxAreaEvents = {
    * A queueChange event indicates that the song queue has changed.
    * Listeners are passed the new state in the updated queue.
    */
-  jukeBoxQueueChange: (Song: string) => void;
+  jukeBoxQueueChange: (queue: Song[]) => void;
 };
 
 /**
@@ -53,8 +53,6 @@ export type JukeBoxAreaEvents = {
 export default class JukeBoxAreaController extends (EventEmitter as new () => TypedEventEmitter<JukeBoxAreaEvents>) {
   private _model: JukeBoxAreaModel;
 
-  private _playersWhoStarred: string[];
-
   /**
    * Constructs a new JukeBoxAreaController, initialized with the state of the
    * provided jukeBoxAreaModel.
@@ -64,7 +62,6 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
   constructor(jukeBoxAreaModel: JukeBoxAreaModel) {
     super();
     this._model = jukeBoxAreaModel;
-    this._playersWhoStarred = [];
   }
 
   /**
@@ -82,14 +79,7 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
 
   public set queue(queue: Song[]) {
     this._model.songQueue = queue;
-  }
-
-  public get playersWhoStarred(): string[] {
-    return this._playersWhoStarred;
-  }
-
-  public addPlayerWhoStarred(playerID: string) {
-    this._playersWhoStarred.push(playerID);
+    this.emit('jukeBoxQueueChange', queue);
   }
 
   /**
@@ -111,18 +101,18 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
   }
 }
 
-export function useSongQueue(controller: JukeBoxAreaController): string[] | undefined {
-  const res: string[] = [];
+// export function useSongQueue(controller: JukeBoxAreaController): Song[] | undefined {
+//   const res: Song[] = [];
 
-  useEffect(() => {
-    function addSong(song: string) {
-      res.push(song);
-    }
-    controller.addListener('jukeBoxQueueChange', addSong);
-    return () => {
-      controller.removeListener('jukeBoxQueueChange', addSong);
-    };
-  });
+//   useEffect(() => {
+//     function addSong(queue: Song[]) {
+//       res.push(queue);
+//     }
+//     controller.addListener('jukeBoxQueueChange', addSong);
+//     return () => {
+//       controller.removeListener('jukeBoxQueueChange', addSong);
+//     };
+//   });
 
-  return res;
-}
+//   return res;
+// }

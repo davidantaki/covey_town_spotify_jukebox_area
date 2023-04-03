@@ -17,6 +17,7 @@ export type TownJoinResponse = {
   interactables: Interactable[];
 };
 
+
 export type Interactable = ViewingArea | ConversationArea | JukeBoxArea;
 
 export type TownSettingsUpdate = {

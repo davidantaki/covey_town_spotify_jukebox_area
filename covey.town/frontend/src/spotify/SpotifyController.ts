@@ -29,7 +29,7 @@ export default class SpotifyController {
     };
     const state = generateRandomString(16);
     const scope =
-      'user-read-private user-read-email user-modify-playback-state user-read-playback-state';
+      'streaming user-read-private user-read-email user-modify-playback-state user-read-playback-state';
 
     return (
       'https://accounts.spotify.com/authorize?' +

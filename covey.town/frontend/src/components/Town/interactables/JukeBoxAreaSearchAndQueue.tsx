@@ -239,6 +239,86 @@ export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
   );
 }
 
+export function SearchAndQueue({
+  searchValue,
+  handleSearchChange,
+  findSongs,
+  upvoteSong,
+  downvoteSong,
+  searchResults,
+  addSongToQueue,
+  sortedQueue,
+}: {
+  searchValue: string;
+  handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  findSongs: () => void;
+  upvoteSong: (index: number) => void;
+  downvoteSong: (index: number) => void;
+  searchResults: any;
+  addSongToQueue: (song: Song) => void;
+  sortedQueue: Song[];
+}): JSX.Element {
+  return (
+    <>
+      <GridItem>
+        <Flex gap={'5px'}>
+          <Box width={'85%'} marginLeft={'2%'}>
+            <InputGroup>
+              <Input
+                pr='4.5rem'
+                type='tel'
+                value={searchValue}
+                onChange={handleSearchChange}
+                onKeyPress={e => {
+                  if (e.key === 'Enter') {
+                    findSongs();
+                  }
+                }}
+                placeholder='Search Songs'
+              />
+            </InputGroup>
+          </Box>
+          <Box width={'15%'} marginRight={'2%'}>
+            <Button width={'100%'} onClick={findSongs}>
+              Here!
+            </Button>
+          </Box>
+        </Flex>
+        <VStack>
+          {/* Map search results response to SearchResults */}
+          {searchResults &&
+            searchResults.tracks &&
+            searchResults.tracks.items &&
+            searchResults.tracks.items.map((item: any) => {
+              return (
+                // eslint-disable-next-line react/jsx-key
+                <SearchResult
+                  songTitle={item.name}
+                  songArtist={item.artists[0].name}
+                  songDuration={item.duration_ms}
+                  songUri={item.uri}
+                  addSongToQueueFunc={addSongToQueue}
+                />
+              );
+            })}
+        </VStack>
+      </GridItem>
+      <GridItem>
+        <VStack>
+          {sortedQueue.map((song: Song, index: number) => (
+            <QueueItem
+              key={song.spotifyId}
+              song={song}
+              onUpvote={() => upvoteSong(index)}
+              onDownvote={() => downvoteSong(index)}
+            />
+          ))}
+        </VStack>
+      </GridItem>
+    </>
+  );
+}
+
 /**
  * The ViewingArea monitors the player's interaction with a ViewingArea on the map: displaying either
  * a popup to set the video for a viewing area, or if the video is set, a video player.
@@ -321,11 +401,6 @@ export function JukeBoxArea({
     }
   };
 
-  // const addToQueue = (songJson: any) => {
-  //   const newSong = createSong('playerId', songJson);
-  //   setQueue([...queue, newSong]);
-  // };
-
   const upvoteSong = (index: number) => {
     const updatedQueue = [...queue];
     updatedQueue[index].upvotes += 1;
@@ -363,55 +438,24 @@ export function JukeBoxArea({
     } else {
       toRender = (
         <>
-          <JukeboxSpotifyLogin />
+          <GridItem>
+            <JukeboxSpotifyLogin />
+          </GridItem>
         </>
       );
     }
   } else {
     toRender = (
-      <>
-        <Flex gap={'5px'}>
-          <Box width={'85%'} marginLeft={'2%'}>
-            <InputGroup>
-              <Input
-                pr='4.5rem'
-                type='tel'
-                value={searchValue}
-                onChange={handleSearchChange}
-                onKeyPress={e => {
-                  if (e.key === 'Enter') {
-                    findSongs();
-                  }
-                }}
-                placeholder='Search Songs'
-              />
-            </InputGroup>
-          </Box>
-          <Box width={'15%'} marginRight={'2%'}>
-            <Button width={'100%'} onClick={findSongs}>
-              Here!
-            </Button>
-          </Box>
-        </Flex>
-        <VStack>
-          {/* Map search results response to SearchResults */}
-          {searchResults &&
-            searchResults.tracks &&
-            searchResults.tracks.items &&
-            searchResults.tracks.items.map((item: any) => {
-              return (
-                // eslint-disable-next-line react/jsx-key
-                <SearchResult
-                  songTitle={item.name}
-                  songArtist={item.artists[0].name}
-                  songDuration={item.duration_ms}
-                  songUri={item.uri}
-                  addSongToQueueFunc={addSongToQueue}
-                />
-              );
-            })}
-        </VStack>
-      </>
+      <SearchAndQueue
+        searchValue={searchValue}
+        handleSearchChange={handleSearchChange}
+        findSongs={findSongs}
+        upvoteSong={upvoteSong}
+        downvoteSong={downvoteSong}
+        searchResults={searchResults}
+        addSongToQueue={addSongToQueue}
+        sortedQueue={sortedQueue}
+      />
     );
   }
 
@@ -429,19 +473,7 @@ export function JukeBoxArea({
           <ModalHeader>JukeBox</ModalHeader>
           <ModalCloseButton />
           <Grid templateColumns='repeat(2, 1fr)' gap={6}>
-            <GridItem>{toRender}</GridItem>
-            <GridItem>
-              <VStack>
-                {sortedQueue.map((song: Song, index: number) => (
-                  <QueueItem
-                    key={song.spotifyId}
-                    song={song}
-                    onUpvote={() => upvoteSong(index)}
-                    onDownvote={() => downvoteSong(index)}
-                  />
-                ))}
-              </VStack>
-            </GridItem>
+            {toRender}
           </Grid>
           <ModalFooter></ModalFooter>
         </ModalContent>

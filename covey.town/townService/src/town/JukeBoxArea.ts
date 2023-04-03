@@ -1,12 +1,12 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
 import Player from '../lib/Player';
 import {
+  Song,
   BoundingBox,
   TownEmitter,
   JukeBoxArea as JukeBoxAreaModel,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
-import Song from '../lib/Song';
 
 export default class JukeBoxArea extends InteractableArea {
   private _songQueue: Song[];

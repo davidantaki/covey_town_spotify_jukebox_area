@@ -1,8 +1,7 @@
 import { EventEmitter } from 'events';
 import { useEffect } from 'react';
 import TypedEventEmitter from 'typed-emitter';
-import { JukeBoxArea as JukeBoxAreaModel } from '../types/CoveyTownSocket';
-import Song from '../classes/Song';
+import { Song, JukeBoxArea as JukeBoxAreaModel } from '../types/CoveyTownSocket';
 
 /**
  * The events that a JukeBoxAreaController can emit

@@ -26,7 +26,7 @@ import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
-import Song from '../../../classes/Song';
+import { Song, createSong } from '../../../types/CoveyTownSocket';
 import JukeBoxAreaInteractable from './JukeBoxArea';
 
 export class MockReactPlayer extends ReactPlayer {
@@ -158,7 +158,7 @@ export function QueueItem({
         </Button>
       </GridItem>
       <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        {song.getNetVotes()}
+        {song.upvotes - song.downvotes}
       </GridItem>
     </Grid>
   );
@@ -267,7 +267,7 @@ export function JukeBoxArea({
   };
 
   const addToQueue = (songJson: any) => {
-    const newSong = new Song('playerId', songJson);
+    const newSong = createSong('playerId', songJson);
     setQueue([...queue, newSong]);
   };
 
@@ -283,7 +283,9 @@ export function JukeBoxArea({
     setQueue(updatedQueue);
   };
 
-  const sortedQueue = queue.slice().sort((a, b) => b.getNetVotes() - a.getNetVotes());
+  const netVotes = (song: Song) => song.upvotes - song.downvotes;
+
+  const sortedQueue = queue.slice().sort((a, b) => netVotes(b) - netVotes(a));
 
   useEffect(() => {
     // Cleanup function

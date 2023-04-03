@@ -1,7 +1,35 @@
 import { EventEmitter } from 'events';
 import { useEffect } from 'react';
 import TypedEventEmitter from 'typed-emitter';
-import { Song, JukeBoxArea as JukeBoxAreaModel } from '../types/CoveyTownSocket';
+import { JukeBoxArea as JukeBoxAreaModel } from '../types/CoveyTownSocket';
+
+export interface Song {
+  title: string;
+  artists: string[];
+  spotifyId: string;
+  addedBy: string;
+  upvotes: number;
+  downvotes: number;
+  songJson: any;
+}
+
+export function createSong(addedBy: string, songJson: any): Song {
+  const title: string = songJson.name;
+  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
+  const spotifyId: string = songJson.id;
+  const upvotes = 0;
+  const downvotes = 0;
+
+  return {
+    title,
+    artists,
+    spotifyId,
+    addedBy,
+    upvotes,
+    downvotes,
+    songJson: { ...songJson },
+  };
+}
 
 /**
  * The events that a JukeBoxAreaController can emit

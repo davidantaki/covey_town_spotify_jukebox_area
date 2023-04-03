@@ -26,8 +26,36 @@ import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
-import { Song, createSong } from '../../../types/CoveyTownSocket';
+// import { Song, createSong } from '../../../types/CoveyTownSocket';
 import JukeBoxAreaInteractable from './JukeBoxArea';
+
+export interface Song {
+  title: string;
+  artists: string[];
+  spotifyId: string;
+  addedBy: string;
+  upvotes: number;
+  downvotes: number;
+  songJson: any;
+}
+
+export function createSong(addedBy: string, songJson: any): Song {
+  const title: string = songJson.name;
+  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
+  const spotifyId: string = songJson.id;
+  const upvotes = 0;
+  const downvotes = 0;
+
+  return {
+    title,
+    artists,
+    spotifyId,
+    addedBy,
+    upvotes,
+    downvotes,
+    songJson: { ...songJson },
+  };
+}
 
 export class MockReactPlayer extends ReactPlayer {
   render(): React.ReactNode {

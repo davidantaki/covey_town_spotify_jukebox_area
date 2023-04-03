@@ -26,6 +26,7 @@ import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
+import Song from '../../../classes/Song';
 import JukeBoxAreaInteractable from './JukeBoxArea';
 
 export class MockReactPlayer extends ReactPlayer {
@@ -124,6 +125,45 @@ export function JukeboxSpotifySaveAuthToken(): JSX.Element {
   return <></>;
 }
 
+export function QueueItem({
+  song,
+  onUpvote,
+  onDownvote,
+}: {
+  song: Song;
+  onUpvote: () => void;
+  onDownvote: () => void;
+}): JSX.Element {
+  return (
+    <Grid
+      templateRows='repeat(1, 1fr)'
+      templateColumns='repeat(10, 1fr)'
+      gap='50px'
+      p='0'
+      mt={'3%'}>
+      <GridItem w='100%' colSpan={4} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
+        {song.title}
+      </GridItem>
+      <GridItem w='100%' colSpan={3} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
+        {song.artists.join(', ')}
+      </GridItem>
+      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
+        <Button colorScheme='green' variant='solid' onClick={onUpvote}>
+          Upvote
+        </Button>
+      </GridItem>
+      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
+        <Button colorScheme='red' variant='solid' onClick={onDownvote}>
+          Downvote
+        </Button>
+      </GridItem>
+      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
+        {song.getNetVotes()}
+      </GridItem>
+    </Grid>
+  );
+}
+
 /**
  * Used while getting the spotify token to update our main component
  * so that it continues to retrieve the token from local storage to check
@@ -193,8 +233,9 @@ export function JukeBoxArea({
       townController.unPause();
     }
   }, [townController, isOpen]);
+  //TODO:john might just delete this
   useEffect(() => {
-    const setQeueue = (q: string[] | undefined) => {
+    const setQeueue = (q: Song[] | undefined) => {
       if (!q) {
         townController.interactableEmitter.emit('endIteraction', jukeBoxAreaController);
       } else {
@@ -224,6 +265,25 @@ export function JukeBoxArea({
       setSearchResults('');
     }
   };
+
+  const addToQueue = (songJson: any) => {
+    const newSong = new Song('playerId', songJson);
+    setQueue([...queue, newSong]);
+  };
+
+  const upvoteSong = (index: number) => {
+    const updatedQueue = [...queue];
+    updatedQueue[index].upvotes += 1;
+    setQueue(updatedQueue);
+  };
+
+  const downvoteSong = (index: number) => {
+    const updatedQueue = [...queue];
+    updatedQueue[index].downvotes += 1;
+    setQueue(updatedQueue);
+  };
+
+  const sortedQueue = queue.slice().sort((a, b) => b.getNetVotes() - a.getNetVotes());
 
   useEffect(() => {
     // Cleanup function
@@ -309,7 +369,22 @@ export function JukeBoxArea({
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>JukeBox</ModalHeader>
-          <ModalCloseButton /> {toRender}
+          <ModalCloseButton />
+          <Grid templateColumns='repeat(2, 1fr)' gap={6}>
+            <GridItem>{toRender}</GridItem>
+            <GridItem>
+              <VStack>
+                {sortedQueue.map((song: Song, index: number) => (
+                  <QueueItem
+                    key={song.spotifyId}
+                    song={song}
+                    onUpvote={() => upvoteSong(index)}
+                    onDownvote={() => downvoteSong(index)}
+                  />
+                ))}
+              </VStack>
+            </GridItem>
+          </Grid>
           <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>

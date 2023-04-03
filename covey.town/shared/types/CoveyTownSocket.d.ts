@@ -1,3 +1,6 @@
+//import Song from '../../frontend/src/classes/Song';
+import Song from '../../townService/src/lib/Song';
+
 export type TownJoinResponse = {
   /** Unique ID that represents this player * */
   userID: string;
@@ -71,7 +74,7 @@ export interface ViewingArea {
 
 export interface JukeBoxArea {
   id: string;
-  songQueue: string[];
+  songQueue: Song[];
 }
 
 export interface ServerToClientEvents {

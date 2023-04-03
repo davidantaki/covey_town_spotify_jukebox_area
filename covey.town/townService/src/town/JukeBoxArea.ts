@@ -6,9 +6,10 @@ import {
   JukeBoxArea as JukeBoxAreaModel,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
+import Song from '../lib/Song';
 
 export default class JukeBoxArea extends InteractableArea {
-  private _songQueue: string[];
+  private _songQueue: Song[];
 
   public get songQueue() {
     return this._songQueue;

@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { useEffect } from 'react';
 import TypedEventEmitter from 'typed-emitter';
 import { JukeBoxArea as JukeBoxAreaModel } from '../types/CoveyTownSocket';
+import Song from '../classes/Song';
 
 /**
  * The events that a JukeBoxAreaController can emit
@@ -48,11 +49,11 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
     return this._model.id;
   }
 
-  public get queue(): string[] {
+  public get queue(): Song[] {
     return this._model.songQueue;
   }
 
-  public set queue(queue: string[]) {
+  public set queue(queue: Song[]) {
     this._model.songQueue = queue;
   }
 

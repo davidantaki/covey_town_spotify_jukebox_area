@@ -17,35 +17,6 @@ export type TownJoinResponse = {
   interactables: Interactable[];
 };
 
-export interface Song {
-  title: string;
-  artists: string[];
-  spotifyId: string;
-  addedBy: string;
-  upvotes: number;
-  downvotes: number;
-  songJson: any;
-};
-
-export function createSong(addedBy: string, songJson: any): Song {
-  const title: string = songJson.name;
-  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
-  const spotifyId: string = songJson.id;
-  let upvotes: number = 0;
-  let downvotes: number = 0;
-
-  return {
-    title,
-    artists,
-    spotifyId,
-    addedBy,
-    upvotes,
-    downvotes,
-    songJson: { ...songJson },
-  };
-};
-
-
 export type Interactable = ViewingArea | ConversationArea | JukeBoxArea;
 
 export type TownSettingsUpdate = {
@@ -118,4 +89,32 @@ export interface ClientToServerEvents {
   chatMessage: (message: ChatMessage) => void;
   playerMovement: (movementData: PlayerLocation) => void;
   interactableUpdate: (update: Interactable) => void;
+};
+
+export interface Song {
+  title: string;
+  artists: string[];
+  spotifyId: string;
+  addedBy: string;
+  upvotes: number;
+  downvotes: number;
+  songJson: any;
+};
+
+export function createSong(addedBy: string, songJson: any): Song {
+  const title: string = songJson.name;
+  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
+  const spotifyId: string = songJson.id;
+  let upvotes: number = 0;
+  let downvotes: number = 0;
+
+  return {
+    title,
+    artists,
+    spotifyId,
+    addedBy,
+    upvotes,
+    downvotes,
+    songJson: { ...songJson },
+  };
 };

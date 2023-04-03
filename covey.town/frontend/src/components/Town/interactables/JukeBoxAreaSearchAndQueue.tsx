@@ -1,6 +1,10 @@
 import {
+  Box,
+  Button,
+  Flex,
   Grid,
   GridItem,
+  Icon,
   Input,
   InputGroup,
   Modal,
@@ -9,12 +13,16 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Tooltip,
   useDisclosure,
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
+import { BsFillPlayFill } from 'react-icons/bs';
 import ReactPlayer from 'react-player';
+import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
@@ -30,23 +38,111 @@ export function SearchResult({
   songTitle,
   songArtist,
   songDuration,
+  songUri,
 }: {
   songTitle: string;
   songArtist: string;
   songDuration: string;
+  songUri: string;
 }): JSX.Element {
+  const playClickHandler = async () => {
+    const token = localStorage.getItem('spotifyAuthToken');
+    if (token) {
+      const trueToken = token.slice(1, -1);
+      await SpotifyController.playTrack(trueToken, songUri);
+    }
+  };
   return (
-    <Grid templateRows='repeat(1, 1fr)' templateColumns='repeat(3, 1fr)' gap={50} p='0'>
-      <GridItem colSpan={1} h='10' bg='transparent'>
+    <Grid
+      templateRows='repeat(1, 1fr)'
+      templateColumns='repeat(10, 1fr)'
+      gap='50px'
+      p='0'
+      mt={'3%'}>
+      <GridItem w='100%' colSpan={5} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
         {songTitle}
       </GridItem>
-      <GridItem colSpan={1} h='10' bg='transparent'>
+      <GridItem w='100%' colSpan={2} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
         {songArtist}
       </GridItem>
-      <GridItem colSpan={1} h='10' bg='transparent'>
+      <GridItem w='100%' colSpan={1} h='10' mt={'2%'} ml={'8%'}>
         {songDuration}
       </GridItem>
+      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
+        <Tooltip label='Play Song' fontSize='md'>
+          <Button colorScheme='teal' variant='solid' onClick={playClickHandler}>
+            <Icon as={BsFillPlayFill} />
+          </Button>
+        </Tooltip>
+      </GridItem>
     </Grid>
+  );
+}
+
+/**
+ * Component that handles the login to spotify and saving the token to local storage
+ * if the user is not logged in to spotify.
+ */
+export function JukeboxSpotifyLogin(): JSX.Element {
+  useEffect(() => {
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests or subscriptions
+      // to avoid updating the state of an unmounted component
+      // Here we're cancelling the fetchData() request
+      const source = axios.CancelToken.source();
+      source.cancel('Component unmounted');
+    };
+  }, []);
+
+  const clickHandler = () => {
+    const url = SpotifyController.getAuthorizationLink();
+    window.open(url, '_blank');
+  };
+
+  return (
+    <Button colorScheme='teal' variant='solid' onClick={clickHandler}>
+      Login To Spotify
+    </Button>
+  );
+}
+
+/**
+ * Component that handles the saving of the spotify token to local storage
+ * after the user has logged in to spotify. This component is used to get the
+ * token from the url and save it to local storage. This component is used
+ * in the spotify login popup window.
+ */
+export function JukeboxSpotifySaveAuthToken(): JSX.Element {
+  const params: any = useParams();
+  const token = params.authToken;
+  window.localStorage.setItem('spotifyAuthToken', JSON.stringify(token));
+  // remove id & token from route params after saving to local storage
+  window.history.replaceState(null, '', `${window.location.origin}/user-token`);
+  window.close();
+  return <></>;
+}
+
+/**
+ * Used while getting the spotify token to update our main component
+ * so that it continues to retrieve the token from local storage to check
+ * if it is valid.
+ */
+export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
+  const [timeSeconds, setSeconds] = useState<number>(0);
+  const getTime = () => {
+    const time = Date.now();
+    setSeconds(Math.floor((time / 1000) % 60));
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => getTime(), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <>
+      <p>The current time is: {timeSeconds}</p>
+    </>
   );
 }
 
@@ -64,18 +160,30 @@ export function JukeBoxArea({
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
   const [searchValue, setSearchValue] = React.useState('');
+  const [spotifyAuthToken, setSpotifyAuthToken] = useState<string>('');
   // Current search results JSON Object
   const [searchResults, setSearchResults] = useState<any>();
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
     setSearchValue(event.target.value);
   };
-
   const closeModal = useCallback(() => {
     townController.unPause();
   }, [townController]);
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [queue, setQueue] = useState(jukeBoxAreaController.queue);
+
+  const [timeSeconds, setSeconds] = useState<number>(0);
+  useEffect(() => {
+    const getTime = () => {
+      const time = Date.now();
+      setSeconds(Math.floor((time / 1000) % 60));
+    };
+
+    const interval = setInterval(() => getTime(), 1000);
+    console.log('interval: ', interval);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -103,29 +211,90 @@ export function JukeBoxArea({
     onOpen();
   }
 
-  const [token, setToken] = useState<string>('');
+  const findSongs = async () => {
+    if (searchValue) {
+      const songs = await SpotifyController.search(
+        spotifyAuthToken.slice(1, -1),
+        searchValue,
+        'track',
+      );
+      setSearchResults(songs);
+    } else {
+      setSearchResults('');
+    }
+  };
 
   useEffect(() => {
-    async function getToken() {
-      const auth = await SpotifyController.fetchToken();
-      setToken(() => auth);
-    }
-    getToken();
-  }, []);
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests or subscriptions
+      // to avoid updating the state of an unmounted component
+      // Here we're cancelling the fetchData() request
+      const source = axios.CancelToken.source();
+      source.cancel('Component unmounted');
+    };
+  }, [searchValue]);
 
-  useEffect(() => {
-    async function findSongs() {
-      // only search if there is a search value
-      if (searchValue !== '') {
-        const songs = await SpotifyController.search(token, searchValue, 'track');
-        setSearchResults(songs);
-        console.log(songs);
-      } else {
-        setSearchResults(undefined);
-      }
+  let toRender;
+
+  // Check if the user is logged in.
+  if (spotifyAuthToken === '') {
+    const authToken = window.localStorage.getItem('spotifyAuthToken');
+    if (authToken !== null) {
+      setSpotifyAuthToken(authToken);
+    } else {
+      toRender = (
+        <>
+          <JukeboxSpotifyLogin />
+        </>
+      );
     }
-    findSongs();
-  }, [searchValue, token]);
+  } else {
+    toRender = (
+      <>
+        <Flex gap={'5px'}>
+          <Box width={'85%'} marginLeft={'2%'}>
+            <InputGroup>
+              <Input
+                pr='4.5rem'
+                type='tel'
+                value={searchValue}
+                onChange={handleSearchChange}
+                onKeyPress={e => {
+                  if (e.key === 'Enter') {
+                    findSongs();
+                  }
+                }}
+                placeholder='Search Songs'
+              />
+            </InputGroup>
+          </Box>
+          <Box width={'15%'} marginRight={'2%'}>
+            <Button width={'100%'} onClick={findSongs}>
+              Here!
+            </Button>
+          </Box>
+        </Flex>
+        <VStack>
+          {/* Map search results response to SearchResults */}
+          {searchResults &&
+            searchResults.tracks &&
+            searchResults.tracks.items &&
+            searchResults.tracks.items.map((item: any) => {
+              return (
+                // eslint-disable-next-line react/jsx-key
+                <SearchResult
+                  songTitle={item.name}
+                  songArtist={item.artists[0].name}
+                  songDuration={item.duration_ms}
+                  songUri={item.uri}
+                />
+              );
+            })}
+        </VStack>
+      </>
+    );
+  }
 
   return (
     <>
@@ -139,32 +308,7 @@ export function JukeBoxArea({
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>JukeBox</ModalHeader>
-          <ModalCloseButton />
-          <InputGroup>
-            <Input
-              pr='4.5rem'
-              type='tel'
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder='Search Songs'
-            />
-          </InputGroup>
-          <VStack>
-            {/* Map search results response to SearchResults */}
-            {searchResults &&
-              searchResults.tracks &&
-              searchResults.tracks.items &&
-              searchResults.tracks.items.map((item: any) => {
-                return (
-                  // eslint-disable-next-line react/jsx-key
-                  <SearchResult
-                    songTitle={item.name}
-                    songArtist={item.artists[0].name}
-                    songDuration={item.duration_ms}
-                  />
-                );
-              })}
-          </VStack>
+          <ModalCloseButton /> {toRender}
           <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>

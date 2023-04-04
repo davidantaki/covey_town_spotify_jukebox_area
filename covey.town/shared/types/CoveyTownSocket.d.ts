@@ -15,14 +15,15 @@ export type TownJoinResponse = {
   isPubliclyListed: boolean;
   /** Current state of interactables in this town */
   interactables: Interactable[];
-}
+};
+
 
 export type Interactable = ViewingArea | ConversationArea | JukeBoxArea;
 
 export type TownSettingsUpdate = {
   friendlyName?: string;
   isPubliclyListed?: boolean;
-}
+};
 
 export type Direction = 'front' | 'back' | 'left' | 'right';
 export interface Player {
@@ -67,12 +68,12 @@ export interface ViewingArea {
   video?: string;
   isPlaying: boolean;
   elapsedTimeSec: number;
-}
+};
 
 export interface JukeBoxArea {
   id: string;
-  songQueue: string[];
-}
+  songQueue: Song[];
+};
 
 export interface ServerToClientEvents {
   playerMoved: (movedPlayer: Player) => void;
@@ -83,10 +84,38 @@ export interface ServerToClientEvents {
   townClosing: () => void;
   chatMessage: (message: ChatMessage) => void;
   interactableUpdate: (interactable: Interactable) => void;
-}
+};
 
 export interface ClientToServerEvents {
   chatMessage: (message: ChatMessage) => void;
   playerMovement: (movementData: PlayerLocation) => void;
   interactableUpdate: (update: Interactable) => void;
-}
+};
+
+export interface Song {
+  title: string;
+  artists: string[];
+  spotifyId: string;
+  addedBy: string;
+  upvotes: number;
+  downvotes: number;
+  songJson: any;
+};
+
+export function createSong(addedBy: string, songJson: any): Song {
+  const title: string = songJson.name;
+  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
+  const spotifyId: string = songJson.id;
+  let upvotes: number = 0;
+  let downvotes: number = 0;
+
+  return {
+    title,
+    artists,
+    spotifyId,
+    addedBy,
+    upvotes,
+    downvotes,
+    songJson: { ...songJson },
+  };
+};

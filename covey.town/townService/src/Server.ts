@@ -82,15 +82,20 @@ app.use(
  */
 app.get('/callback', async (req, res) => {
   const code = (req.query.code as string) || null;
-  const response: any = await SpotifyController.token(code);
-  if (response.status !== 200) {
-    res.send(`Error: ${res}`);
-    return;
+  try {
+    const response: any = await SpotifyController.token(code);
+    if (response.status !== 200) {
+      res.send(`Error: ${res}`);
+      return;
+    }
+    // console.log(response);
+    const token = response.data.access_token;
+    res.redirect(`${CLIENT_URL}/jukebox-spotify-login/save-auth-token/${token}`);
+    // console.log(`token:${token}`);
+  } catch (error) {
+    console.log(error);
+    res.send(`Error: ${error}`);
   }
-  // console.log(response);
-  const token = response.data.access_token;
-  res.redirect(`${CLIENT_URL}/jukebox-spotify-login/save-auth-token/${token}`);
-  // console.log(`token:${token}`);
 });
 
 // Start the configured server, defaulting to port 8081 if $PORT is not set

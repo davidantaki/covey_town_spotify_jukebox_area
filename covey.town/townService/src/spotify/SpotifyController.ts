@@ -1,10 +1,13 @@
 import axios, { AxiosResponse } from 'axios';
 import QueryString from 'qs';
+import * as dotenv from 'dotenv';
 import { searchPipe, tokenPipe, trackPipe } from './ValidateSpotify';
 
-const SPOTIFY_CLIENT_ID = '97a7d37671c84613aaae12f0d590663a';
-const SPOTIFY_CLIENT_SECRET = '3e721586b8c64aa48ecdf01db5d3e6c6';
-const SPOTIFY_REDIRECT_URI = 'http://localhost:8081/callback';
+dotenv.config();
+
+const { SPOTIFY_CLIENT_ID } = process.env;
+const { SPOTIFY_CLIENT_SECRET } = process.env;
+const { SPOTIFY_REDIRECT_URI } = process.env;
 
 /**
  * Abstraction layer in code to communicate with Spotify API to receive authenication,

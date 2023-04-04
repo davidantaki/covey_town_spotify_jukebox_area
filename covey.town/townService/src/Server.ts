@@ -14,11 +14,6 @@ import { TownsController } from './town/TownsController';
 import { logError } from './Utils';
 import SpotifyController from './spotify/SpotifyController';
 
-const ID = '97a7d37671c84613aaae12f0d590663a';
-const SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-const REDIRECT = 'http://localhost:8081/callback';
-const CLIENT_URL = 'http://localhost:3000';
-
 // Create the server instances
 const app = Express();
 app.use(CORS());
@@ -27,6 +22,8 @@ const socketServer = new SocketServer<ClientToServerEvents, ServerToClientEvents
   cors: { origin: '*' },
 });
 dotenv.config();
+
+const { CLIENT_URL } = process.env;
 
 // Initialize the towns store with a factory that creates a broadcast emitter for a town
 TownsStore.initializeTownsStore((townID: string) => socketServer.to(townID));

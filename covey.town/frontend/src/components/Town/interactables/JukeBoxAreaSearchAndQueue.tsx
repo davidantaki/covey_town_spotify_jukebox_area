@@ -340,6 +340,10 @@ export function JukeBoxArea({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [queue, setQueue] = useState(jukeBoxAreaController.queue);
 
+  const [playerVotes, setPlayerVotes] = useState<{
+    [songId: string]: 'upvote' | 'downvote' | null;
+  }>({});
+
   // Function to update queue
   const updateQueue = (newQueue: Song[]) => {
     setQueue(newQueue);
@@ -407,25 +411,89 @@ export function JukeBoxArea({
   };
 
   const upvoteSong = (songId: string) => {
-    const updatedQueue = [...queue];
-    updatedQueue.forEach((song, index) => {
-      if (song.spotifyId === songId) {
-        updatedQueue[index] = { ...song, upvotes: song.upvotes + 1 };
-      }
-    });
-    setQueue(updatedQueue);
-    townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
+    if (playerVotes[songId] === 'upvote') {
+      toast({
+        title: 'You can only upvote each song once.',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+    } else if (playerVotes[songId] === 'downvote') {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
+        ...playerVotes,
+        [songId]: 'upvote',
+      };
+      setPlayerVotes(updatedPlayerVotes);
+
+      const updatedQueue = [...queue];
+      updatedQueue.forEach((song, index) => {
+        if (song.spotifyId === songId) {
+          updatedQueue[index] = {
+            ...song,
+            upvotes: song.upvotes + 1,
+            downvotes: song.downvotes - 1,
+          };
+        }
+      });
+      updateQueue(updatedQueue);
+    } else {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
+        ...playerVotes,
+        [songId]: 'upvote',
+      };
+      setPlayerVotes(updatedPlayerVotes);
+
+      const updatedQueue = [...queue];
+      updatedQueue.forEach((song, index) => {
+        if (song.spotifyId === songId) {
+          updatedQueue[index] = { ...song, upvotes: song.upvotes + 1 };
+        }
+      });
+      updateQueue(updatedQueue);
+    }
   };
 
   const downvoteSong = (songId: string) => {
-    const updatedQueue = [...queue];
-    updatedQueue.forEach((song, index) => {
-      if (song.spotifyId === songId) {
-        updatedQueue[index] = { ...song, downvotes: song.downvotes + 1 };
-      }
-    });
-    setQueue(updatedQueue);
-    townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
+    if (playerVotes[songId] === 'downvote') {
+      toast({
+        title: 'You can only downvote each song once.',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+    } else if (playerVotes[songId] === 'upvote') {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
+        ...playerVotes,
+        [songId]: 'downvote',
+      };
+      setPlayerVotes(updatedPlayerVotes);
+
+      const updatedQueue = [...queue];
+      updatedQueue.forEach((song, index) => {
+        if (song.spotifyId === songId) {
+          updatedQueue[index] = {
+            ...song,
+            downvotes: song.downvotes + 1,
+            upvotes: song.upvotes - 1,
+          };
+        }
+      });
+      updateQueue(updatedQueue);
+    } else {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
+        ...playerVotes,
+        [songId]: 'downvote',
+      };
+      setPlayerVotes(updatedPlayerVotes);
+
+      const updatedQueue = [...queue];
+      updatedQueue.forEach((song, index) => {
+        if (song.spotifyId === songId) {
+          updatedQueue[index] = { ...song, downvotes: song.downvotes + 1 };
+        }
+      });
+      updateQueue(updatedQueue);
+    }
   };
 
   const addSongToQueue = (song: Song) => {

@@ -429,11 +429,22 @@ export function JukeBoxArea({
   };
 
   const addSongToQueue = (song: Song) => {
-    const updatedQueue = [...queue, song];
-    updateQueue(updatedQueue);
-    // Console log new queue
-    console.log('New Queue: ', queue);
-    townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
+    const songInQueue = queue.some(queuedSong => queuedSong.spotifyId === song.spotifyId);
+
+    if (songInQueue) {
+      toast({
+        title: 'That song is already in the queue',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+    } else {
+      const updatedQueue = [...queue, song];
+      updateQueue(updatedQueue);
+      // Console log new queue
+      console.log('New Queue: ', queue);
+      townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
+    }
   };
 
   const netVotes = (song: Song) => song.upvotes - song.downvotes;

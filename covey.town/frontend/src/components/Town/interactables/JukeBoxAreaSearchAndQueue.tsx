@@ -18,6 +18,14 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@material-ui/core';
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import { BsFillPlayFill, BsPlusCircleFill } from 'react-icons/bs';
@@ -284,22 +292,40 @@ export function SearchAndQueue({
           </Box>
         </Flex>
         <VStack>
-          {/* Map search results response to SearchResults */}
-          {searchResults &&
-            searchResults.tracks &&
-            searchResults.tracks.items &&
-            searchResults.tracks.items.map((item: any) => {
-              return (
-                // eslint-disable-next-line react/jsx-key
-                <SearchResult
-                  songTitle={item.name}
-                  songArtist={item.artists[0].name}
-                  songDuration={item.duration_ms}
-                  songUri={item.uri}
-                  addSongToQueueFunc={addSongToQueue}
-                />
-              );
-            })}
+          <TableContainer style={{ marginTop: '10px', paddingLeft: '2%', paddingRight: '2%' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Duration</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {/* Map search results response to SearchResults */}
+                {searchResults &&
+                  searchResults.tracks &&
+                  searchResults.tracks.items &&
+                  searchResults.tracks.items.map((item: any) => {
+                    return (
+                      <TableRow
+                        key={item.id}
+                        onClick={async () => {
+                          const token = localStorage.getItem('spotifyAuthToken');
+                          if (token) {
+                            const trueToken = token.slice(1, -1);
+                            await SpotifyController.playTrack(trueToken, item.uri);
+                          }
+                        }}>
+                        <TableCell> {item.name} </TableCell>
+                        <TableCell> {item.artists[0].name}</TableCell>
+                        <TableCell> {item.duration_ms}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </VStack>
       </GridItem>
       <GridItem>

@@ -15,26 +15,6 @@ const { SPOTIFY_REDIRECT_URI } = process.env;
  */
 export default class SpotifyController {
   /**
-   * A method to prompt the user to login to their Spotify account
-   * using Spotify's authorization code flow.
-   */
-  // public static async login(): Promise<unknown> {
-  //   const response = axios({
-  //     method: 'get',
-  //     url: 'https://accounts.spotify.com/authorize?',
-  //     params: {
-  //       client_id: SPOTIFY_CLIENT_ID,
-  //       response_type: 'code',
-  //       redirect_uri: SPOTIFY_REDIRECT_URI,
-  //       state: '34fFs29kd09',
-  //       scope: 'user-read-private user-read-email',
-  //     },
-  //   });
-  //   console.log(response);
-  //   return response;
-  // }
-
-  /**
    * This method uses Spotify API method of exchanging the authorization
    * code for an authentication token to be used to get track info and more.
    * @param code is an authorization code to be exchanged for token.

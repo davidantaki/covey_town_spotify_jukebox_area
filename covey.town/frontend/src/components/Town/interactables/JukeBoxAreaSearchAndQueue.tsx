@@ -347,6 +347,7 @@ export function JukeBoxArea({
   const updateQueue = (newQueue: Song[]) => {
     setQueue(newQueue);
     jukeBoxAreaController.queue = newQueue;
+    townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
   };
 
   const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
@@ -508,9 +509,6 @@ export function JukeBoxArea({
     } else {
       const updatedQueue = [...queue, song];
       updateQueue(updatedQueue);
-      // Console log new queue
-      console.log('New Queue: ', queue);
-      townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
     }
   };
 

@@ -32,6 +32,17 @@ function App() {
     townController?.disconnect();
   }, [townController]);
 
+  // Handle on tab close
+  React.useEffect(() => {
+    function handleTabClose() {
+      localStorage.clear();
+    }
+    window.addEventListener('beforeunload', handleTabClose);
+    return () => {
+      window.removeEventListener('beforeunload', handleTabClose);
+    };
+  }, []);
+
   let page: JSX.Element;
   if (townController) {
     page = (

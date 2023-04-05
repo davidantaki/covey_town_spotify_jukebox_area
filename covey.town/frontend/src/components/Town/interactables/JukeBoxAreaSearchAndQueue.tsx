@@ -1,10 +1,10 @@
 import {
   Box,
   Button,
+  Center,
   Flex,
   Grid,
   GridItem,
-  Icon,
   Input,
   InputGroup,
   Modal,
@@ -13,21 +13,29 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Tooltip,
   useDisclosure,
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@material-ui/core';
+import ExpandLessIcon from '@material-ui/icons/ExpandLess';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import PlayArrowIcon from '@material-ui/icons/PlayArrow';
+import QueueMusicIcon from '@material-ui/icons/QueueMusic';
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
-import { BsFillPlayFill, BsPlusCircleFill } from 'react-icons/bs';
 import ReactPlayer from 'react-player';
 import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
-// import { Song, createSong } from '../../../types/CoveyTownSocket';
-// import { ViewingArea as ViewingAreaModel } from '../../../types/CoveyTownSocket';
 import JukeBoxAreaInteractable from './JukeBoxArea';
 
 export interface Song {
@@ -99,36 +107,21 @@ export function SearchResult({
   };
 
   return (
-    <Grid
-      templateRows='repeat(1, 1fr)'
-      templateColumns='repeat(10, 1fr)'
-      gap='50px'
-      p='0'
-      mt={'3%'}>
-      <GridItem w='100%' colSpan={5} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        {songTitle}
-      </GridItem>
-      <GridItem w='100%' colSpan={2} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        {songArtist}
-      </GridItem>
-      <GridItem w='100%' colSpan={1} h='10' mt={'2%'} ml={'8%'}>
-        {songDuration}
-      </GridItem>
-      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        <Tooltip label='Play Song' fontSize='md'>
-          <Button colorScheme='teal' variant='solid' onClick={playClickHandler}>
-            <Icon as={BsFillPlayFill} />
-          </Button>
-        </Tooltip>
-      </GridItem>
-      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        <Tooltip label='Add To Queue' fontSize='md'>
-          <Button colorScheme='teal' variant='solid' onClick={addSongToQueueClickHandler}>
-            <Icon as={BsPlusCircleFill} />
-          </Button>
-        </Tooltip>
-      </GridItem>
-    </Grid>
+    <TableRow>
+      <TableCell> {songTitle} </TableCell>
+      <TableCell> {songArtist}</TableCell>
+      <TableCell> {songDuration}</TableCell>
+      <TableCell>
+        <Button onClick={playClickHandler}>
+          <PlayArrowIcon />
+        </Button>
+      </TableCell>
+      <TableCell>
+        <Button onClick={addSongToQueueClickHandler}>
+          <QueueMusicIcon />
+        </Button>
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -186,32 +179,21 @@ export function QueueItem({
   onDownvote: () => void;
 }): JSX.Element {
   return (
-    <Grid
-      templateRows='repeat(1, 1fr)'
-      templateColumns='repeat(10, 1fr)'
-      gap='50px'
-      p='0'
-      mt={'3%'}>
-      <GridItem w='100%' colSpan={4} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        {song.title}
-      </GridItem>
-      <GridItem w='100%' colSpan={3} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        {song.artists.join(', ')}
-      </GridItem>
-      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        <Button colorScheme='green' variant='solid' onClick={onUpvote}>
-          Upvote
+    <TableRow>
+      <TableCell> {song.title} </TableCell>
+      <TableCell> {song.artists}</TableCell>
+      <TableCell>
+        <Button onClick={onUpvote}>
+          <ExpandLessIcon />
         </Button>
-      </GridItem>
-      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        <Button colorScheme='red' variant='solid' onClick={onDownvote}>
-          Downvote
+      </TableCell>
+      <TableCell>
+        <Button onClick={onDownvote}>
+          <ExpandMoreIcon />
         </Button>
-      </GridItem>
-      <GridItem w='100%' colSpan={1} h='10' bg='transparent' mt={'2%'} ml={'8%'}>
-        {song.upvotes - song.downvotes}
-      </GridItem>
-    </Grid>
+      </TableCell>
+      <TableCell> {song.upvotes - song.downvotes} </TableCell>
+    </TableRow>
   );
 }
 
@@ -259,7 +241,7 @@ export function SearchAndQueue({
 }): JSX.Element {
   return (
     <>
-      <GridItem>
+      <GridItem colSpan={25}>
         <Flex gap={'5px'}>
           <Box width={'85%'} marginLeft={'2%'}>
             <InputGroup>
@@ -284,34 +266,66 @@ export function SearchAndQueue({
           </Box>
         </Flex>
         <VStack>
-          {/* Map search results response to SearchResults */}
-          {searchResults &&
-            searchResults.tracks &&
-            searchResults.tracks.items &&
-            searchResults.tracks.items.map((item: any) => {
-              return (
-                // eslint-disable-next-line react/jsx-key
-                <SearchResult
-                  songTitle={item.name}
-                  songArtist={item.artists[0].name}
-                  songDuration={item.duration_ms}
-                  songUri={item.uri}
-                  addSongToQueueFunc={addSongToQueue}
-                />
-              );
-            })}
+          <TableContainer style={{ paddingLeft: '2%' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Duration</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Play</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>+ Queue</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {searchResults?.tracks?.items?.map((item: any) => {
+                  return (
+                    <SearchResult
+                      key={item.id}
+                      songTitle={item.name}
+                      songArtist={item.artists[0].name}
+                      songDuration={item.duration_ms}
+                      songUri={item.uri}
+                      addSongToQueueFunc={addSongToQueue}
+                    />
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </VStack>
       </GridItem>
-      <GridItem>
+      <GridItem colSpan={1} bg={'black'} width={'10%'} justifySelf='center'></GridItem>
+      <GridItem colSpan={25}>
+        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
+          Queue
+        </Center>
         <VStack>
-          {sortedQueue.map((song: Song) => (
-            <QueueItem
-              key={song.spotifyId}
-              song={song}
-              onUpvote={() => upvoteSong(song.spotifyId)}
-              onDownvote={() => downvoteSong(song.spotifyId)}
-            />
-          ))}
+          <TableContainer style={{ paddingRight: '2%' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Upvote</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Downvote</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Net Votes</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedQueue.map((song: Song) => {
+                  return (
+                    <QueueItem
+                      key={song.spotifyId}
+                      song={song}
+                      onUpvote={() => upvoteSong(song.spotifyId)}
+                      onDownvote={() => downvoteSong(song.spotifyId)}
+                    />
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </VStack>
       </GridItem>
     </>
@@ -357,9 +371,9 @@ export function JukeBoxArea({
     townController.unPause();
   }, [townController]);
 
-  const [timeSeconds, setSeconds] = useState<number>(0);
+  const [, setSeconds] = useState<number>(0);
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen && spotifyAuthToken === '') {
       const getTime = () => {
         const time = Date.now();
         setSeconds(Math.floor((time / 1000) % 60));
@@ -369,7 +383,7 @@ export function JukeBoxArea({
       console.log('interval: ', interval);
       return () => clearInterval(interval);
     }
-  }, [isOpen]);
+  }, [isOpen, spotifyAuthToken]);
 
   useEffect(() => {
     if (isOpen) {
@@ -571,9 +585,7 @@ export function JukeBoxArea({
         <ModalContent>
           <ModalHeader>JukeBox</ModalHeader>
           <ModalCloseButton />
-          <Grid templateColumns='repeat(2, 1fr)' gap={6}>
-            {toRender}
-          </Grid>
+          <Grid templateColumns='repeat(51, 1fr)'>{toRender}</Grid>
           <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>

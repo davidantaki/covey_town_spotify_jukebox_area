@@ -383,9 +383,9 @@ export function JukeBoxArea({
     townController.unPause();
   }, [townController]);
 
-  const [timeSeconds, setSeconds] = useState<number>(0);
+  const [, setSeconds] = useState<number>(0);
   useEffect(() => {
-    if (!isOpen) {
+    if (isOpen && spotifyAuthToken === '') {
       const getTime = () => {
         const time = Date.now();
         setSeconds(Math.floor((time / 1000) % 60));
@@ -395,7 +395,7 @@ export function JukeBoxArea({
       console.log('interval: ', interval);
       return () => clearInterval(interval);
     }
-  }, [isOpen]);
+  }, [isOpen, spotifyAuthToken]);
 
   useEffect(() => {
     if (isOpen) {

@@ -1,3 +1,4 @@
+/// <reference types='@types/spotify-web-playback-sdk' />;
 import {
   Box,
   Button,
@@ -88,8 +89,7 @@ export function SearchResult({
   const playClickHandler = async () => {
     const token = localStorage.getItem('spotifyAuthToken');
     if (token) {
-      const trueToken = token.slice(1, -1);
-      await SpotifyController.playTrack(trueToken, songUri);
+      await SpotifyController.playTrack(token, songUri);
     }
   };
   const addSongToQueueClickHandler = async () => {
@@ -177,7 +177,7 @@ export function JukeboxSpotifyLogin(): JSX.Element {
 export function JukeboxSpotifySaveAuthToken(): JSX.Element {
   const params: any = useParams();
   const token = params.authToken;
-  window.localStorage.setItem('spotifyAuthToken', JSON.stringify(token));
+  window.localStorage.setItem('spotifyAuthToken', token);
   // remove id & token from route params after saving to local storage
   window.history.replaceState(null, '', `${window.location.origin}/user-token`);
   window.close();
@@ -246,6 +246,160 @@ export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
   );
 }
 
+interface Image {
+  url: string;
+}
+
+interface Album {
+  images: Image[];
+}
+
+interface Artist {
+  name: string;
+}
+
+interface Track {
+  name: string;
+  album: Album;
+  artists: Artist[];
+}
+
+const track = {
+  name: '',
+  _album: {
+    images: [{ url: '' }],
+  },
+  get album() {
+    return this._album;
+  },
+  set album(value) {
+    this._album = value;
+  },
+  artists: [{ name: '' }],
+};
+
+export function SpotifyWebPlayback({ token }: { token: string }): JSX.Element {
+  const [isPaused, setPaused] = useState<boolean>(false);
+  const [isActive, setActive] = useState<boolean>(false);
+  const [player, setPlayer] = useState<Spotify.Player | undefined>(undefined);
+  const [currentTrack, setTrack] = useState<Track>(track);
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.scdn.co/spotify-player.js';
+    script.async = true;
+
+    document.body.appendChild(script);
+
+    window.onSpotifyWebPlaybackSDKReady = () => {
+      const tempPlayer = new window.Spotify.Player({
+        name: 'Web Playback SDK',
+        getOAuthToken: cb => {
+          cb(token);
+        },
+        volume: 0.5,
+      });
+
+      setPlayer(tempPlayer);
+
+      tempPlayer.addListener('ready', ({ device_id }: { device_id: string }) => {
+        console.log('Ready with Device ID', device_id);
+      });
+
+      tempPlayer.addListener('not_ready', ({ device_id }: { device_id: string }) => {
+        console.log('Device ID has gone offline', device_id);
+      });
+
+      tempPlayer.addListener('initialization_error', ({ message }) => {
+        console.log('initialization_error');
+        console.error(message);
+      });
+
+      tempPlayer.addListener('authentication_error', ({ message }) => {
+        console.log('authentication_error');
+        console.error(message);
+      });
+
+      tempPlayer.addListener('account_error', ({ message }) => {
+        console.log('account_error');
+        console.error(message);
+      });
+
+      tempPlayer.addListener('player_state_changed', (state: Spotify.PlaybackState) => {
+        if (!state) {
+          return;
+        }
+
+        setTrack(state.track_window.current_track);
+        setPaused(state.paused);
+
+        tempPlayer.getCurrentState().then(tempState => {
+          const isAct = !tempState ? false : true;
+          setActive(isAct);
+        });
+      });
+
+      tempPlayer.connect().then((connected: boolean) => {
+        if (connected) {
+          console.log('player.connect() success');
+        } else {
+          console.log('player.connect() FAILED');
+        }
+      });
+    };
+  }, [token]);
+
+  if (!isActive) {
+    return (
+      <>
+        <div className='container'>
+          <div className='main-wrapper'>
+            <b> Instance not active. Transfer your playback using your Spotify app </b>
+          </div>
+        </div>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <div className='container'>
+          <div className='main-wrapper'>
+            <img src={currentTrack.album.images[0].url} className='now-playing__cover' alt='' />
+
+            <div className='now-playing__side'>
+              <div className='now-playing__name'>{currentTrack.name}</div>
+              <div className='now-playing__artist'>{currentTrack.artists[0].name}</div>
+
+              <button
+                className='btn-spotify'
+                onClick={() => {
+                  player?.previousTrack();
+                }}>
+                &lt;&lt;
+              </button>
+
+              <button
+                className='btn-spotify'
+                onClick={() => {
+                  player?.togglePlay();
+                }}>
+                {isPaused ? 'PLAY' : 'PAUSE'}
+              </button>
+
+              <button
+                className='btn-spotify'
+                onClick={() => {
+                  player?.nextTrack();
+                }}>
+                &gt;&gt;
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+}
+
 export function SearchAndQueue({
   searchValue,
   handleSearchChange,
@@ -255,6 +409,7 @@ export function SearchAndQueue({
   searchResults,
   addSongToQueue,
   sortedQueue,
+  authToken,
 }: {
   searchValue: string;
   handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -264,6 +419,7 @@ export function SearchAndQueue({
   searchResults: any;
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
+  authToken: string;
 }): JSX.Element {
   return (
     <>
@@ -311,10 +467,8 @@ export function SearchAndQueue({
                       <TableRow
                         key={item.id}
                         onClick={async () => {
-                          const token = localStorage.getItem('spotifyAuthToken');
-                          if (token) {
-                            const trueToken = token.slice(1, -1);
-                            await SpotifyController.playTrack(trueToken, item.uri);
+                          if (authToken) {
+                            await SpotifyController.playTrack(authToken, item.uri);
                           }
                         }}>
                         <TableCell> {item.name} </TableCell>
@@ -328,7 +482,9 @@ export function SearchAndQueue({
           </TableContainer>
         </VStack>
       </GridItem>
+      {/* The queue */}
       <GridItem>
+        <SpotifyWebPlayback token={authToken} />
         <VStack>
           {sortedQueue.map((song: Song) => (
             <QueueItem
@@ -425,11 +581,7 @@ export function JukeBoxArea({
 
   const findSongs = async () => {
     if (searchValue) {
-      const songs = await SpotifyController.search(
-        spotifyAuthToken.slice(1, -1),
-        searchValue,
-        'track',
-      );
+      const songs = await SpotifyController.search(spotifyAuthToken, searchValue, 'track');
       setSearchResults(songs);
     } else {
       setSearchResults('');
@@ -580,6 +732,7 @@ export function JukeBoxArea({
         searchResults={searchResults}
         addSongToQueue={addSongToQueue}
         sortedQueue={sortedQueue}
+        authToken={spotifyAuthToken}
       />
     );
   }

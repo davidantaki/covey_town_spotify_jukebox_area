@@ -30,7 +30,20 @@ export default class SpotifyController {
     };
     const state = generateRandomString(16);
     const scope =
-      'streaming user-read-private user-read-email user-modify-playback-state user-read-playback-state';
+      'app-remote-control\
+      streaming\
+      user-read-private\
+      user-read-email\
+      user-modify-playback-state\
+      user-read-playback-state\
+      user-read-currently-playing\
+      playlist-read-collaborative\
+      playlist-modify-public\
+      playlist-read-private\
+      playlist-modify-private\
+      user-library-modify\
+      user-library-read\
+      user-read-playback-position';
 
     return (
       'https://accounts.spotify.com/authorize?' +

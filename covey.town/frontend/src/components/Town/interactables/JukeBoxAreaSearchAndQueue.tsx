@@ -257,10 +257,23 @@ export function SpotifyWebPlayback({ token }: { token: string }): JSX.Element {
   const [isActive, setActive] = useState<boolean>(false);
   const [player, setPlayer] = useState<Spotify.Player | undefined>(undefined);
   const [currentTrack, setTrack] = useState<Track>(track);
+  
   useEffect(() => {
+    // load Web Playback SDK.
     const script = document.createElement('script');
     script.src = 'https://sdk.scdn.co/spotify-player.js';
     script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://sdk.scdn.co/spotify-player.js';
+
 
     document.body.appendChild(script);
 
@@ -319,17 +332,27 @@ export function SpotifyWebPlayback({ token }: { token: string }): JSX.Element {
           console.log('player.connect() FAILED');
         }
       });
+
+      // Cleanup
+      return () => {
+        tempPlayer.removeListener('ready');
+        tempPlayer.removeListener('not_ready');
+        tempPlayer.removeListener('initialization_error');
+        tempPlayer.removeListener('authentication_error');
+        tempPlayer.removeListener('account_error');
+        tempPlayer.removeListener('player_state_changed');
+        tempPlayer.disconnect();
+      };
     };
   }, [token]);
 
   if (!isActive) {
     return (
       <>
-        <div className='container'>
-          <div className='main-wrapper'>
-            <b> Instance not active. Transfer your playback using your Spotify app </b>
-          </div>
-        </div>
+        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
+          Spotify Player instance not active. Transfer your playback to Covey.Town using your
+          Spotify app
+        </Center>
       </>
     );
   } else {
@@ -458,9 +481,9 @@ export function SearchAndQueue({
           </TableContainer>
         </VStack>
       </GridItem>
-      <SpotifyWebPlayback token={authToken} />
       <GridItem colSpan={1} bg={'black'} width={'10%'} justifySelf='center'></GridItem>
       <GridItem colSpan={25}>
+        <SpotifyWebPlayback token={authToken} />
         <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
           Queue
         </Center>

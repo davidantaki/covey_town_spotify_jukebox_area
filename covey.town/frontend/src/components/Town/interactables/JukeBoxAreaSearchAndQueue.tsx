@@ -137,7 +137,6 @@ export function SearchAndQueue({
                   <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
                   <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
                   <TableCell style={{ fontWeight: 'bolder' }}>Duration</TableCell>
-                  {/* <TableCell style={{ fontWeight: 'bolder' }}>Play</TableCell> */}
                   <TableCell style={{ fontWeight: 'bolder' }}>+ Queue</TableCell>
                 </TableRow>
               </TableHead>

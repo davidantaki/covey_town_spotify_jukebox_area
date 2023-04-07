@@ -125,7 +125,7 @@ export function SearchAndQueue({
           </Box>
           <Box width={'15%'} marginRight={'2%'}>
             <Button width={'100%'} onClick={findSongs}>
-              Here!
+              Search!
             </Button>
           </Box>
         </Flex>

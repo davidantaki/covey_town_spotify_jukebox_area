@@ -1,5 +1,4 @@
 import { EventEmitter } from 'events';
-import { useEffect } from 'react';
 import TypedEventEmitter from 'typed-emitter';
 import { JukeBoxArea as JukeBoxAreaModel } from '../types/CoveyTownSocket';
 
@@ -9,7 +8,6 @@ export interface Song {
   spotifyId: string;
   addedBy: string;
   upvotes: number;
-  downvotes: number;
   songJson: any;
 }
 
@@ -26,7 +24,6 @@ export function createSong(addedBy: string, songJson: any): Song {
     spotifyId,
     addedBy,
     upvotes,
-    downvotes,
     songJson: { ...songJson },
   };
 }

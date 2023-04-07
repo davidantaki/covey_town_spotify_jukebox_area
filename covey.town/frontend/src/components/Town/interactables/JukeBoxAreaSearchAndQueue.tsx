@@ -26,19 +26,17 @@ import {
   TableHead,
   TableRow,
 } from '@material-ui/core';
-import ExpandLessIcon from '@material-ui/icons/ExpandLess';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import QueueMusicIcon from '@material-ui/icons/QueueMusic';
 import axios from 'axios';
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
-import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
+import { JukeboxSpotifyLogin } from '../Login';
+import { QueueItem } from '../QueueItem';
+import { SearchResult } from '../SearchResult';
+import { SpotifyWebPlayback } from '../WebPlaybackSDK';
 import JukeBoxAreaInteractable from './JukeBoxArea';
-import SpotifyPlayer from 'spotify-web-playback';
 
 export interface Song {
   title: string;
@@ -46,7 +44,6 @@ export interface Song {
   spotifyId: string;
   addedBy: string;
   upvotes: number;
-  downvotes: number;
   songJson: any;
 }
 
@@ -55,7 +52,6 @@ export function createSong(addedBy: string, songJson: any): Song {
   const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
   const spotifyId: string = songJson.id;
   const upvotes = 0;
-  const downvotes = 0;
 
   return {
     title,
@@ -63,7 +59,6 @@ export function createSong(addedBy: string, songJson: any): Song {
     spotifyId,
     addedBy,
     upvotes,
-    downvotes,
     songJson: { ...songJson },
   };
 }
@@ -74,242 +69,24 @@ export class MockReactPlayer extends ReactPlayer {
   }
 }
 
-export function SearchResult({
-  songTitle,
-  songArtist,
-  songDuration,
-  songUri,
-  addSongToQueueFunc,
-}: {
-  songTitle: string;
-  songArtist: string;
-  songDuration: string;
-  songUri: string;
-  addSongToQueueFunc: (song: Song) => void;
-}): JSX.Element {
-  const playClickHandler = async () => {
-    const token = localStorage.getItem('spotifyAuthToken');
-    if (token) {
-      await SpotifyController.playTrack(token, songUri);
-    }
-  };
-  const addSongToQueueClickHandler = async () => {
-    // Great a song object from this search result
-    const song: Song = {
-      title: songTitle,
-      artists: [songArtist],
-      spotifyId: songUri,
-      addedBy: 'test',
-      upvotes: 0,
-      downvotes: 0,
-      songJson: {},
-    };
-    addSongToQueueFunc(song);
-  };
-
-  return (
-    <TableRow>
-      <TableCell> {songTitle} </TableCell>
-      <TableCell> {songArtist}</TableCell>
-      <TableCell> {songDuration}</TableCell>
-      {/* <TableCell>
-        <Button onClick={playClickHandler}>
-          <PlayArrowIcon />
-        </Button>
-      </TableCell> */}
-      <TableCell>
-        <Button onClick={addSongToQueueClickHandler}>
-          <QueueMusicIcon />
-        </Button>
-      </TableCell>
-    </TableRow>
-  );
-}
-
-/**
- * Component that handles the login to spotify and saving the token to local storage
- * if the user is not logged in to spotify.
- */
-export function JukeboxSpotifyLogin(): JSX.Element {
-  useEffect(() => {
-    // Cleanup function
-    return () => {
-      // Cancel any pending requests or subscriptions
-      // to avoid updating the state of an unmounted component
-      // Here we're cancelling the fetchData() request
-      const source = axios.CancelToken.source();
-      source.cancel('Component unmounted');
-    };
-  }, []);
-
-  const clickHandler = () => {
-    const url = SpotifyController.getAuthorizationLink();
-    window.open(url, '_blank');
-  };
-
-  return (
-    <Button colorScheme='teal' variant='solid' onClick={clickHandler}>
-      Login To Spotify
-    </Button>
-  );
-}
-
-/**
- * Component that handles the saving of the spotify token to local storage
- * after the user has logged in to spotify. This component is used to get the
- * token from the url and save it to local storage. This component is used
- * in the spotify login popup window.
- */
-export function JukeboxSpotifySaveAuthToken(): JSX.Element {
-  const params: any = useParams();
-  const token = params.authToken;
-  window.localStorage.setItem('spotifyAuthToken', token);
-  // remove id & token from route params after saving to local storage
-  window.history.replaceState(null, '', `${window.location.origin}/user-token`);
-  window.close();
-  return <></>;
-}
-
-export function QueueItem({
-  song,
-  onUpvote,
-  onDownvote,
-}: {
-  song: Song;
-  onUpvote: () => void;
-  onDownvote: () => void;
-}): JSX.Element {
-  return (
-    <TableRow>
-      <TableCell> {song.title} </TableCell>
-      <TableCell> {song.artists}</TableCell>
-      <TableCell>
-        <Button onClick={onUpvote}>
-          <ExpandLessIcon />
-        </Button>
-      </TableCell>
-      <TableCell>
-        <Button onClick={onDownvote}>
-          <ExpandMoreIcon />
-        </Button>
-      </TableCell>
-      <TableCell> {song.upvotes - song.downvotes} </TableCell>
-    </TableRow>
-  );
-}
-
-/**
- * Used while getting the spotify token to update our main component
- * so that it continues to retrieve the token from local storage to check
- * if it is valid.
- */
-export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
-  const [timeSeconds, setSeconds] = useState<number>(0);
-  const getTime = () => {
-    const time = Date.now();
-    setSeconds(Math.floor((time / 1000) % 60));
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => getTime(), 1000);
-    return () => clearInterval(interval);
-  }, []);
-  return (
-    <>
-      <p>The current time is: {timeSeconds}</p>
-    </>
-  );
-}
-
-export function SpotifyWebPlayback({
-  token,
-  currentTrack,
-}: {
-  token: string;
-  currentTrack: Song;
-}): JSX.Element {
-  const [isConnected, setConnected] = useState<boolean>(false);
-  const [isActive, setActive] = useState<boolean>(false);
-  // const [currentTrack, setTrack] = useState<Song>(track);
-
-  const spotifyPlayer = useMemo(() => {
-    return new SpotifyPlayer('Covey.Town Spotify Player');
-  }, []);
-  const uri = 'spotify:track:54flyrjcdnQdco7300avMJ';
-  async function connectToSpotifyPlayer(authToken: string) {
-    try {
-      const response = await spotifyPlayer.connect(authToken);
-      // Check that we connected
-      if (response === true) {
-        console.log('Connected to Spotify Player');
-        setConnected(true);
-      } else {
-        console.log('Failed to connect to Spotify Player');
-        setConnected(false);
-      }
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  // Play new track if updated
-  useEffect(() => {
-    if (isConnected && currentTrack) {
-      spotifyPlayer.play(currentTrack.spotifyId);
-    }
-  }, [currentTrack, isConnected, spotifyPlayer]);
-
-  if (!isConnected) {
-    connectToSpotifyPlayer(token);
-  }
-
-  if (!isConnected) {
-    return (
-      <>
-        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
-          Spotify Player Failed to Connect. Try reloading the page.
-        </Center>
-      </>
-    );
-  } else if (currentTrack) {
-    return (
-      <>
-        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
-          {/* {currentTrack.name} */}
-          Connected
-        </Center>
-        <VStack>
-          <TableContainer style={{ paddingRight: '2%' }}>
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <TableCell> {currentTrack.title} </TableCell>
-                  <TableCell> {currentTrack.artists} </TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </VStack>
-      </>
-    );
-  } else {
-    return (
-      <>
-        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
-          No Track Playing
-        </Center>
-      </>
-    );
-  }
-}
-
+// /**
+//  * Used while getting the spotify token to update our main component
+//  * so that it continues to retrieve the token from local storage to check
+//  * if it is valid.
+//  */
+// export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
+//   const [timeSeconds, setSeconds] = useState<number>(0);
+//   const getTime = () => {
+//     const time = Date.now();
+//     setSeconds(Math.floor((time / 1000) % 60));
+//   };
 export function SearchAndQueue({
   searchValue,
   handleSearchChange,
   findSongs,
   upvoteSong,
-  downvoteSong,
   searchResults,
+  currentSong,
   addSongToQueue,
   sortedQueue,
   authToken,
@@ -319,8 +96,8 @@ export function SearchAndQueue({
   handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   findSongs: () => void;
   upvoteSong: (songId: string) => void;
-  downvoteSong: (songId: string) => void;
   searchResults: any;
+  currentSong: Song | undefined;
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
   authToken: string;
@@ -371,11 +148,14 @@ export function SearchAndQueue({
                   searchResults.tracks.items &&
                   searchResults.tracks.items.map((item: any) => {
                     return (
-                      <TableRow key={item.id}>
-                        <TableCell> {item.name} </TableCell>
-                        <TableCell> {item.artists[0].name}</TableCell>
-                        <TableCell> {item.duration_ms}</TableCell>
-                      </TableRow>
+                      <SearchResult
+                        key={item.id}
+                        songTitle={item.name}
+                        songArtist={item.artists[0].name}
+                        songDuration={item.duration_ms}
+                        songUri={item.uri}
+                        addSongToQueueFunc={addSongToQueue}
+                      />
                     );
                   })}
               </TableBody>
@@ -387,7 +167,7 @@ export function SearchAndQueue({
       <GridItem colSpan={25}>
         <SpotifyWebPlayback token={authToken} currentTrack={currentTrack} />
         <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
-          Queue
+          Current Song: {currentSong?.title}
         </Center>
         <VStack>
           <TableContainer style={{ paddingRight: '2%' }}>
@@ -396,9 +176,7 @@ export function SearchAndQueue({
                 <TableRow>
                   <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
                   <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Upvote</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Downvote</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Net Votes</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Vote</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -408,7 +186,6 @@ export function SearchAndQueue({
                       key={song.spotifyId}
                       song={song}
                       onUpvote={() => upvoteSong(song.spotifyId)}
-                      onDownvote={() => downvoteSong(song.spotifyId)}
                     />
                   );
                 })}
@@ -440,10 +217,10 @@ export function JukeBoxArea({
   const [searchResults, setSearchResults] = useState<any>();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [currentSong, setCurrentSong] = useState<Song | undefined>(undefined);
   const [queue, setQueue] = useState(jukeBoxAreaController.queue);
-
   const [playerVotes, setPlayerVotes] = useState<{
-    [songId: string]: 'upvote' | 'downvote' | null;
+    [songId: string]: 'upvote' | null;
   }>({});
 
   // Function to update queue
@@ -495,6 +272,18 @@ export function JukeBoxArea({
     };
   }, [jukeBoxAreaController, townController]);
 
+  useEffect(() => {
+    if (!currentSong) {
+      setQueue(prevQueue => {
+        if (prevQueue.length > 0) {
+          setCurrentSong(prevQueue[0]);
+          return prevQueue.slice(1);
+        }
+        return prevQueue;
+      });
+    }
+  }, [currentSong, queue]);
+
   // set is open to true if it is false
   if (!isOpen) {
     onOpen();
@@ -511,32 +300,21 @@ export function JukeBoxArea({
 
   const upvoteSong = (songId: string) => {
     if (playerVotes[songId] === 'upvote') {
-      toast({
-        title: 'You can only upvote each song once.',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
-    } else if (playerVotes[songId] === 'downvote') {
-      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | null } = {
         ...playerVotes,
-        [songId]: 'upvote',
+        [songId]: null,
       };
       setPlayerVotes(updatedPlayerVotes);
 
       const updatedQueue = [...queue];
       updatedQueue.forEach((song, index) => {
         if (song.spotifyId === songId) {
-          updatedQueue[index] = {
-            ...song,
-            upvotes: song.upvotes + 1,
-            downvotes: song.downvotes - 1,
-          };
+          updatedQueue[index] = { ...song, upvotes: song.upvotes - 1 };
         }
       });
       updateQueue(updatedQueue);
     } else {
-      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | null } = {
         ...playerVotes,
         [songId]: 'upvote',
       };
@@ -546,49 +324,6 @@ export function JukeBoxArea({
       updatedQueue.forEach((song, index) => {
         if (song.spotifyId === songId) {
           updatedQueue[index] = { ...song, upvotes: song.upvotes + 1 };
-        }
-      });
-      updateQueue(updatedQueue);
-    }
-  };
-
-  const downvoteSong = (songId: string) => {
-    if (playerVotes[songId] === 'downvote') {
-      toast({
-        title: 'You can only downvote each song once.',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
-    } else if (playerVotes[songId] === 'upvote') {
-      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
-        ...playerVotes,
-        [songId]: 'downvote',
-      };
-      setPlayerVotes(updatedPlayerVotes);
-
-      const updatedQueue = [...queue];
-      updatedQueue.forEach((song, index) => {
-        if (song.spotifyId === songId) {
-          updatedQueue[index] = {
-            ...song,
-            downvotes: song.downvotes + 1,
-            upvotes: song.upvotes - 1,
-          };
-        }
-      });
-      updateQueue(updatedQueue);
-    } else {
-      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
-        ...playerVotes,
-        [songId]: 'downvote',
-      };
-      setPlayerVotes(updatedPlayerVotes);
-
-      const updatedQueue = [...queue];
-      updatedQueue.forEach((song, index) => {
-        if (song.spotifyId === songId) {
-          updatedQueue[index] = { ...song, downvotes: song.downvotes + 1 };
         }
       });
       updateQueue(updatedQueue);
@@ -608,12 +343,11 @@ export function JukeBoxArea({
     } else {
       const updatedQueue = [...queue, song];
       updateQueue(updatedQueue);
+      console.log('updated');
     }
   };
 
-  const netVotes = (song: Song) => song.upvotes - song.downvotes;
-
-  const sortedQueue = queue.slice().sort((a, b) => netVotes(b) - netVotes(a));
+  const sortedQueue = queue.slice().sort((a, b) => b.upvotes - a.upvotes);
 
   useEffect(() => {
     // Cleanup function
@@ -649,8 +383,8 @@ export function JukeBoxArea({
         handleSearchChange={handleSearchChange}
         findSongs={findSongs}
         upvoteSong={upvoteSong}
-        downvoteSong={downvoteSong}
         searchResults={searchResults}
+        currentSong={currentSong}
         addSongToQueue={addSongToQueue}
         sortedQueue={sortedQueue}
         authToken={spotifyAuthToken}
@@ -672,7 +406,9 @@ export function JukeBoxArea({
         <ModalContent>
           <ModalHeader>JukeBox</ModalHeader>
           <ModalCloseButton />
-          <Grid templateColumns='repeat(51, 1fr)'>{toRender}</Grid>
+          <Grid templateColumns='repeat(51, 1fr)' templateRows='repeat(1fr, 2)'>
+            {toRender}
+          </Grid>
           <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>

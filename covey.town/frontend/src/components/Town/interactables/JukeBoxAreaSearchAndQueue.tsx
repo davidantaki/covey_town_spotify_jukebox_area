@@ -1,3 +1,4 @@
+/// <reference types='@types/spotify-web-playback-sdk' />;
 import {
   Box,
   Button,
@@ -25,17 +26,16 @@ import {
   TableHead,
   TableRow,
 } from '@material-ui/core';
-import ExpandLessIcon from '@material-ui/icons/ExpandLess';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import QueueMusicIcon from '@material-ui/icons/QueueMusic';
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
-import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
+import { JukeboxSpotifyLogin } from '../Login';
+import { QueueItem } from '../QueueItem';
+import { SearchResult } from '../SearchResult';
+import { SpotifyWebPlayback } from '../WebPlaybackSDK';
 import JukeBoxAreaInteractable from './JukeBoxArea';
 
 export interface Song {
@@ -44,7 +44,6 @@ export interface Song {
   spotifyId: string;
   addedBy: string;
   upvotes: number;
-  downvotes: number;
   songJson: any;
 }
 
@@ -53,7 +52,6 @@ export function createSong(addedBy: string, songJson: any): Song {
   const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
   const spotifyId: string = songJson.id;
   const upvotes = 0;
-  const downvotes = 0;
 
   return {
     title,
@@ -61,7 +59,6 @@ export function createSong(addedBy: string, songJson: any): Song {
     spotifyId,
     addedBy,
     upvotes,
-    downvotes,
     songJson: { ...songJson },
   };
 }
@@ -72,172 +69,39 @@ export class MockReactPlayer extends ReactPlayer {
   }
 }
 
-export function SearchResult({
-  songTitle,
-  songArtist,
-  songDuration,
-  songUri,
-  addSongToQueueFunc,
-}: {
-  songTitle: string;
-  songArtist: string;
-  songDuration: string;
-  songUri: string;
-  addSongToQueueFunc: (song: Song) => void;
-}): JSX.Element {
-  const playClickHandler = async () => {
-    const token = localStorage.getItem('spotifyAuthToken');
-    if (token) {
-      const trueToken = token.slice(1, -1);
-      await SpotifyController.playTrack(trueToken, songUri);
-    }
-  };
-  const addSongToQueueClickHandler = async () => {
-    // Great a song object from this search result
-    const song: Song = {
-      title: songTitle,
-      artists: [songArtist],
-      spotifyId: songUri,
-      addedBy: 'test',
-      upvotes: 0,
-      downvotes: 0,
-      songJson: {},
-    };
-    addSongToQueueFunc(song);
-  };
-
-  return (
-    <TableRow>
-      <TableCell> {songTitle} </TableCell>
-      <TableCell> {songArtist}</TableCell>
-      <TableCell> {songDuration}</TableCell>
-      <TableCell>
-        <Button onClick={playClickHandler}>
-          <PlayArrowIcon />
-        </Button>
-      </TableCell>
-      <TableCell>
-        <Button onClick={addSongToQueueClickHandler}>
-          <QueueMusicIcon />
-        </Button>
-      </TableCell>
-    </TableRow>
-  );
-}
-
-/**
- * Component that handles the login to spotify and saving the token to local storage
- * if the user is not logged in to spotify.
- */
-export function JukeboxSpotifyLogin(): JSX.Element {
-  useEffect(() => {
-    // Cleanup function
-    return () => {
-      // Cancel any pending requests or subscriptions
-      // to avoid updating the state of an unmounted component
-      // Here we're cancelling the fetchData() request
-      const source = axios.CancelToken.source();
-      source.cancel('Component unmounted');
-    };
-  }, []);
-
-  const clickHandler = () => {
-    const url = SpotifyController.getAuthorizationLink();
-    window.open(url, '_blank');
-  };
-
-  return (
-    <Button colorScheme='teal' variant='solid' onClick={clickHandler}>
-      Login To Spotify
-    </Button>
-  );
-}
-
-/**
- * Component that handles the saving of the spotify token to local storage
- * after the user has logged in to spotify. This component is used to get the
- * token from the url and save it to local storage. This component is used
- * in the spotify login popup window.
- */
-export function JukeboxSpotifySaveAuthToken(): JSX.Element {
-  const params: any = useParams();
-  const token = params.authToken;
-  window.localStorage.setItem('spotifyAuthToken', JSON.stringify(token));
-  // remove id & token from route params after saving to local storage
-  window.history.replaceState(null, '', `${window.location.origin}/user-token`);
-  window.close();
-  return <></>;
-}
-
-export function QueueItem({
-  song,
-  onUpvote,
-  onDownvote,
-}: {
-  song: Song;
-  onUpvote: () => void;
-  onDownvote: () => void;
-}): JSX.Element {
-  return (
-    <TableRow>
-      <TableCell> {song.title} </TableCell>
-      <TableCell> {song.artists}</TableCell>
-      <TableCell>
-        <Button onClick={onUpvote}>
-          <ExpandLessIcon />
-        </Button>
-      </TableCell>
-      <TableCell>
-        <Button onClick={onDownvote}>
-          <ExpandMoreIcon />
-        </Button>
-      </TableCell>
-      <TableCell> {song.upvotes - song.downvotes} </TableCell>
-    </TableRow>
-  );
-}
-
-/**
- * Used while getting the spotify token to update our main component
- * so that it continues to retrieve the token from local storage to check
- * if it is valid.
- */
-export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
-  const [timeSeconds, setSeconds] = useState<number>(0);
-  const getTime = () => {
-    const time = Date.now();
-    setSeconds(Math.floor((time / 1000) % 60));
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => getTime(), 1000);
-    return () => clearInterval(interval);
-  }, []);
-  return (
-    <>
-      <p>The current time is: {timeSeconds}</p>
-    </>
-  );
-}
-
+// /**
+//  * Used while getting the spotify token to update our main component
+//  * so that it continues to retrieve the token from local storage to check
+//  * if it is valid.
+//  */
+// export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
+//   const [timeSeconds, setSeconds] = useState<number>(0);
+//   const getTime = () => {
+//     const time = Date.now();
+//     setSeconds(Math.floor((time / 1000) % 60));
+//   };
 export function SearchAndQueue({
   searchValue,
   handleSearchChange,
   findSongs,
   upvoteSong,
-  downvoteSong,
   searchResults,
+  currentSong,
   addSongToQueue,
   sortedQueue,
+  authToken,
+  currentTrack,
 }: {
   searchValue: string;
   handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   findSongs: () => void;
   upvoteSong: (songId: string) => void;
-  downvoteSong: (songId: string) => void;
   searchResults: any;
+  currentSong: Song | undefined;
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
+  authToken: string;
+  currentTrack: Song;
 }): JSX.Element {
   return (
     <>
@@ -273,23 +137,27 @@ export function SearchAndQueue({
                   <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
                   <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
                   <TableCell style={{ fontWeight: 'bolder' }}>Duration</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Play</TableCell>
+                  {/* <TableCell style={{ fontWeight: 'bolder' }}>Play</TableCell> */}
                   <TableCell style={{ fontWeight: 'bolder' }}>+ Queue</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {searchResults?.tracks?.items?.map((item: any) => {
-                  return (
-                    <SearchResult
-                      key={item.id}
-                      songTitle={item.name}
-                      songArtist={item.artists[0].name}
-                      songDuration={item.duration_ms}
-                      songUri={item.uri}
-                      addSongToQueueFunc={addSongToQueue}
-                    />
-                  );
-                })}
+                {/* Map search results response to SearchResults */}
+                {searchResults &&
+                  searchResults.tracks &&
+                  searchResults.tracks.items &&
+                  searchResults.tracks.items.map((item: any) => {
+                    return (
+                      <SearchResult
+                        key={item.id}
+                        songTitle={item.name}
+                        songArtist={item.artists[0].name}
+                        songDuration={item.duration_ms}
+                        songUri={item.uri}
+                        addSongToQueueFunc={addSongToQueue}
+                      />
+                    );
+                  })}
               </TableBody>
             </Table>
           </TableContainer>
@@ -297,8 +165,9 @@ export function SearchAndQueue({
       </GridItem>
       <GridItem colSpan={1} bg={'black'} width={'10%'} justifySelf='center'></GridItem>
       <GridItem colSpan={25}>
+        <SpotifyWebPlayback token={authToken} currentTrack={currentTrack} />
         <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
-          Queue
+          Current Song: {currentSong?.title}
         </Center>
         <VStack>
           <TableContainer style={{ paddingRight: '2%' }}>
@@ -307,9 +176,7 @@ export function SearchAndQueue({
                 <TableRow>
                   <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
                   <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Upvote</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Downvote</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Net Votes</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Vote</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -319,7 +186,6 @@ export function SearchAndQueue({
                       key={song.spotifyId}
                       song={song}
                       onUpvote={() => upvoteSong(song.spotifyId)}
-                      onDownvote={() => downvoteSong(song.spotifyId)}
                     />
                   );
                 })}
@@ -351,10 +217,10 @@ export function JukeBoxArea({
   const [searchResults, setSearchResults] = useState<any>();
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const [currentSong, setCurrentSong] = useState<Song | undefined>(undefined);
   const [queue, setQueue] = useState(jukeBoxAreaController.queue);
-
   const [playerVotes, setPlayerVotes] = useState<{
-    [songId: string]: 'upvote' | 'downvote' | null;
+    [songId: string]: 'upvote' | null;
   }>({});
 
   // Function to update queue
@@ -406,6 +272,18 @@ export function JukeBoxArea({
     };
   }, [jukeBoxAreaController, townController]);
 
+  useEffect(() => {
+    if (!currentSong) {
+      setQueue(prevQueue => {
+        if (prevQueue.length > 0) {
+          setCurrentSong(prevQueue[0]);
+          return prevQueue.slice(1);
+        }
+        return prevQueue;
+      });
+    }
+  }, [currentSong, queue]);
+
   // set is open to true if it is false
   if (!isOpen) {
     onOpen();
@@ -413,11 +291,7 @@ export function JukeBoxArea({
 
   const findSongs = async () => {
     if (searchValue) {
-      const songs = await SpotifyController.search(
-        spotifyAuthToken.slice(1, -1),
-        searchValue,
-        'track',
-      );
+      const songs = await SpotifyController.search(spotifyAuthToken, searchValue, 'track');
       setSearchResults(songs);
     } else {
       setSearchResults('');
@@ -426,32 +300,21 @@ export function JukeBoxArea({
 
   const upvoteSong = (songId: string) => {
     if (playerVotes[songId] === 'upvote') {
-      toast({
-        title: 'You can only upvote each song once.',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
-    } else if (playerVotes[songId] === 'downvote') {
-      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | null } = {
         ...playerVotes,
-        [songId]: 'upvote',
+        [songId]: null,
       };
       setPlayerVotes(updatedPlayerVotes);
 
       const updatedQueue = [...queue];
       updatedQueue.forEach((song, index) => {
         if (song.spotifyId === songId) {
-          updatedQueue[index] = {
-            ...song,
-            upvotes: song.upvotes + 1,
-            downvotes: song.downvotes - 1,
-          };
+          updatedQueue[index] = { ...song, upvotes: song.upvotes - 1 };
         }
       });
       updateQueue(updatedQueue);
     } else {
-      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | null } = {
         ...playerVotes,
         [songId]: 'upvote',
       };
@@ -461,49 +324,6 @@ export function JukeBoxArea({
       updatedQueue.forEach((song, index) => {
         if (song.spotifyId === songId) {
           updatedQueue[index] = { ...song, upvotes: song.upvotes + 1 };
-        }
-      });
-      updateQueue(updatedQueue);
-    }
-  };
-
-  const downvoteSong = (songId: string) => {
-    if (playerVotes[songId] === 'downvote') {
-      toast({
-        title: 'You can only downvote each song once.',
-        status: 'warning',
-        duration: 3000,
-        isClosable: true,
-      });
-    } else if (playerVotes[songId] === 'upvote') {
-      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
-        ...playerVotes,
-        [songId]: 'downvote',
-      };
-      setPlayerVotes(updatedPlayerVotes);
-
-      const updatedQueue = [...queue];
-      updatedQueue.forEach((song, index) => {
-        if (song.spotifyId === songId) {
-          updatedQueue[index] = {
-            ...song,
-            downvotes: song.downvotes + 1,
-            upvotes: song.upvotes - 1,
-          };
-        }
-      });
-      updateQueue(updatedQueue);
-    } else {
-      const updatedPlayerVotes: { [songId: string]: 'upvote' | 'downvote' | null } = {
-        ...playerVotes,
-        [songId]: 'downvote',
-      };
-      setPlayerVotes(updatedPlayerVotes);
-
-      const updatedQueue = [...queue];
-      updatedQueue.forEach((song, index) => {
-        if (song.spotifyId === songId) {
-          updatedQueue[index] = { ...song, downvotes: song.downvotes + 1 };
         }
       });
       updateQueue(updatedQueue);
@@ -523,12 +343,11 @@ export function JukeBoxArea({
     } else {
       const updatedQueue = [...queue, song];
       updateQueue(updatedQueue);
+      console.log('updated');
     }
   };
 
-  const netVotes = (song: Song) => song.upvotes - song.downvotes;
-
-  const sortedQueue = queue.slice().sort((a, b) => netVotes(b) - netVotes(a));
+  const sortedQueue = queue.slice().sort((a, b) => b.upvotes - a.upvotes);
 
   useEffect(() => {
     // Cleanup function
@@ -564,10 +383,12 @@ export function JukeBoxArea({
         handleSearchChange={handleSearchChange}
         findSongs={findSongs}
         upvoteSong={upvoteSong}
-        downvoteSong={downvoteSong}
         searchResults={searchResults}
+        currentSong={currentSong}
         addSongToQueue={addSongToQueue}
         sortedQueue={sortedQueue}
+        authToken={spotifyAuthToken}
+        currentTrack={sortedQueue[0]}
       />
     );
   }
@@ -585,7 +406,9 @@ export function JukeBoxArea({
         <ModalContent>
           <ModalHeader>JukeBox</ModalHeader>
           <ModalCloseButton />
-          <Grid templateColumns='repeat(51, 1fr)'>{toRender}</Grid>
+          <Grid templateColumns='repeat(51, 1fr)' templateRows='repeat(1fr, 2)'>
+            {toRender}
+          </Grid>
           <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>

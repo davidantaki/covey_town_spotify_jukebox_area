@@ -1,6 +1,6 @@
 import QueryString from 'qs';
 
-const SPOTIFY_CLIENT_ID = '97a7d37671c84613aaae12f0d590663a';
+const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
 const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
 const SPOTIFY_REDIRECT_URI = 'http://localhost:8081/callback';
 
@@ -30,7 +30,20 @@ export default class SpotifyController {
     };
     const state = generateRandomString(16);
     const scope =
-      'streaming user-read-private user-read-email user-modify-playback-state user-read-playback-state';
+      'app-remote-control\
+      streaming\
+      user-read-private\
+      user-read-email\
+      user-modify-playback-state\
+      user-read-playback-state\
+      user-read-currently-playing\
+      playlist-read-collaborative\
+      playlist-modify-public\
+      playlist-read-private\
+      playlist-modify-private\
+      user-library-modify\
+      user-library-read\
+      user-read-playback-position';
 
     return (
       'https://accounts.spotify.com/authorize?' +

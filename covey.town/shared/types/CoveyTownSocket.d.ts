@@ -17,7 +17,6 @@ export type TownJoinResponse = {
   interactables: Interactable[];
 };
 
-
 export type Interactable = ViewingArea | ConversationArea | JukeBoxArea;
 
 export type TownSettingsUpdate = {
@@ -25,14 +24,14 @@ export type TownSettingsUpdate = {
   isPubliclyListed?: boolean;
 };
 
-export type Direction = 'front' | 'back' | 'left' | 'right';
+export type Direction = "front" | "back" | "left" | "right";
 export interface Player {
   id: string;
   userName: string;
   location: PlayerLocation;
-};
+}
 
-export type XY = { x: number, y: number };
+export type XY = { x: number; y: number };
 
 export interface PlayerLocation {
   /* The CENTER x coordinate of this player's location */
@@ -43,7 +42,7 @@ export interface PlayerLocation {
   rotation: Direction;
   moving: boolean;
   interactableID?: string;
-};
+}
 export type ChatMessage = {
   author: string;
   sid: string;
@@ -55,25 +54,25 @@ export interface ConversationArea {
   id: string;
   topic?: string;
   occupantsByID: string[];
-};
+}
 export interface BoundingBox {
   x: number;
   y: number;
   width: number;
   height: number;
-};
+}
 
 export interface ViewingArea {
   id: string;
   video?: string;
   isPlaying: boolean;
   elapsedTimeSec: number;
-};
+}
 
 export interface JukeBoxArea {
   id: string;
   songQueue: Song[];
-};
+}
 
 export interface ServerToClientEvents {
   playerMoved: (movedPlayer: Player) => void;
@@ -84,13 +83,13 @@ export interface ServerToClientEvents {
   townClosing: () => void;
   chatMessage: (message: ChatMessage) => void;
   interactableUpdate: (interactable: Interactable) => void;
-};
+}
 
 export interface ClientToServerEvents {
   chatMessage: (message: ChatMessage) => void;
   playerMovement: (movementData: PlayerLocation) => void;
   interactableUpdate: (update: Interactable) => void;
-};
+}
 
 export interface Song {
   title: string;
@@ -98,16 +97,16 @@ export interface Song {
   spotifyId: string;
   addedBy: string;
   upvotes: number;
-  downvotes: number;
   songJson: any;
-};
+}
 
 export function createSong(addedBy: string, songJson: any): Song {
   const title: string = songJson.name;
-  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
+  const artists: string[] = songJson.artists.map(
+    (artist: { name: string }) => artist.name
+  );
   const spotifyId: string = songJson.id;
-  let upvotes: number = 0;
-  let downvotes: number = 0;
+  const upvotes = 0;
 
   return {
     title,
@@ -115,7 +114,6 @@ export function createSong(addedBy: string, songJson: any): Song {
     spotifyId,
     addedBy,
     upvotes,
-    downvotes,
     songJson: { ...songJson },
   };
-};
+}

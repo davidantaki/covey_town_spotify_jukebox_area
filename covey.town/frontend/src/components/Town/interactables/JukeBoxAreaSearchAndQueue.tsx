@@ -31,13 +31,14 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import QueueMusicIcon from '@material-ui/icons/QueueMusic';
 import axios from 'axios';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import ReactPlayer from 'react-player';
 import { useParams } from 'react-router-dom';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
 import JukeBoxAreaInteractable from './JukeBoxArea';
+import SpotifyPlayer from 'spotify-web-playback';
 
 export interface Song {
   title: string;
@@ -111,11 +112,11 @@ export function SearchResult({
       <TableCell> {songTitle} </TableCell>
       <TableCell> {songArtist}</TableCell>
       <TableCell> {songDuration}</TableCell>
-      <TableCell>
+      {/* <TableCell>
         <Button onClick={playClickHandler}>
           <PlayArrowIcon />
         </Button>
-      </TableCell>
+      </TableCell> */}
       <TableCell>
         <Button onClick={addSongToQueueClickHandler}>
           <QueueMusicIcon />
@@ -220,178 +221,83 @@ export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
   );
 }
 
-interface Image {
-  url: string;
-}
-
-interface Album {
-  images: Image[];
-}
-
-interface Artist {
-  name: string;
-}
-
-interface Track {
-  name: string;
-  album: Album;
-  artists: Artist[];
-}
-
-const track = {
-  name: '',
-  _album: {
-    images: [{ url: '' }],
-  },
-  get album() {
-    return this._album;
-  },
-  set album(value) {
-    this._album = value;
-  },
-  artists: [{ name: '' }],
-};
-
-export function SpotifyWebPlayback({ token }: { token: string }): JSX.Element {
-  const [isPaused, setPaused] = useState<boolean>(false);
+export function SpotifyWebPlayback({
+  token,
+  currentTrack,
+}: {
+  token: string;
+  currentTrack: Song;
+}): JSX.Element {
+  const [isConnected, setConnected] = useState<boolean>(false);
   const [isActive, setActive] = useState<boolean>(false);
-  const [player, setPlayer] = useState<Spotify.Player | undefined>(undefined);
-  const [currentTrack, setTrack] = useState<Track>(track);
-  
-  useEffect(() => {
-    // load Web Playback SDK.
-    const script = document.createElement('script');
-    script.src = 'https://sdk.scdn.co/spotify-player.js';
-    script.async = true;
-    document.body.appendChild(script);
+  // const [currentTrack, setTrack] = useState<Song>(track);
 
-    return () => {
-      document.body.removeChild(script);
-    };
+  const spotifyPlayer = useMemo(() => {
+    return new SpotifyPlayer('Covey.Town Spotify Player');
   }, []);
+  const uri = 'spotify:track:54flyrjcdnQdco7300avMJ';
+  async function connectToSpotifyPlayer(authToken: string) {
+    try {
+      const response = await spotifyPlayer.connect(authToken);
+      // Check that we connected
+      if (response === true) {
+        console.log('Connected to Spotify Player');
+        setConnected(true);
+      } else {
+        console.log('Failed to connect to Spotify Player');
+        setConnected(false);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
+  // Play new track if updated
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.scdn.co/spotify-player.js';
+    if (isConnected && currentTrack) {
+      spotifyPlayer.play(currentTrack.spotifyId);
+    }
+  }, [currentTrack, isConnected, spotifyPlayer]);
 
+  if (!isConnected) {
+    connectToSpotifyPlayer(token);
+  }
 
-    document.body.appendChild(script);
-
-    window.onSpotifyWebPlaybackSDKReady = () => {
-      const tempPlayer = new window.Spotify.Player({
-        name: 'Web Playback SDK',
-        getOAuthToken: cb => {
-          cb(token);
-        },
-        volume: 0.5,
-      });
-
-      setPlayer(tempPlayer);
-
-      tempPlayer.addListener('ready', ({ device_id }: { device_id: string }) => {
-        console.log('Ready with Device ID', device_id);
-      });
-
-      tempPlayer.addListener('not_ready', ({ device_id }: { device_id: string }) => {
-        console.log('Device ID has gone offline', device_id);
-      });
-
-      tempPlayer.addListener('initialization_error', ({ message }) => {
-        console.log('initialization_error');
-        console.error(message);
-      });
-
-      tempPlayer.addListener('authentication_error', ({ message }) => {
-        console.log('authentication_error');
-        console.error(message);
-      });
-
-      tempPlayer.addListener('account_error', ({ message }) => {
-        console.log('account_error');
-        console.error(message);
-      });
-
-      tempPlayer.addListener('player_state_changed', (state: Spotify.PlaybackState) => {
-        if (!state) {
-          return;
-        }
-
-        setTrack(state.track_window.current_track);
-        setPaused(state.paused);
-
-        tempPlayer.getCurrentState().then(tempState => {
-          const isAct = !tempState ? false : true;
-          setActive(isAct);
-        });
-      });
-
-      tempPlayer.connect().then((connected: boolean) => {
-        if (connected) {
-          console.log('player.connect() success');
-        } else {
-          console.log('player.connect() FAILED');
-        }
-      });
-
-      // Cleanup
-      return () => {
-        tempPlayer.removeListener('ready');
-        tempPlayer.removeListener('not_ready');
-        tempPlayer.removeListener('initialization_error');
-        tempPlayer.removeListener('authentication_error');
-        tempPlayer.removeListener('account_error');
-        tempPlayer.removeListener('player_state_changed');
-        tempPlayer.disconnect();
-      };
-    };
-  }, [token]);
-
-  if (!isActive) {
+  if (!isConnected) {
     return (
       <>
         <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
-          Spotify Player instance not active. Transfer your playback to Covey.Town using your
-          Spotify app
+          Spotify Player Failed to Connect. Try reloading the page.
         </Center>
+      </>
+    );
+  } else if (currentTrack) {
+    return (
+      <>
+        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
+          {/* {currentTrack.name} */}
+          Connected
+        </Center>
+        <VStack>
+          <TableContainer style={{ paddingRight: '2%' }}>
+            <Table>
+              <TableBody>
+                <TableRow>
+                  <TableCell> {currentTrack.title} </TableCell>
+                  <TableCell> {currentTrack.artists} </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </VStack>
       </>
     );
   } else {
     return (
       <>
-        <div className='container'>
-          <div className='main-wrapper'>
-            <img src={currentTrack.album.images[0].url} className='now-playing__cover' alt='' />
-
-            <div className='now-playing__side'>
-              <div className='now-playing__name'>{currentTrack.name}</div>
-              <div className='now-playing__artist'>{currentTrack.artists[0].name}</div>
-
-              <button
-                className='btn-spotify'
-                onClick={() => {
-                  player?.previousTrack();
-                }}>
-                &lt;&lt;
-              </button>
-
-              <button
-                className='btn-spotify'
-                onClick={() => {
-                  player?.togglePlay();
-                }}>
-                {isPaused ? 'PLAY' : 'PAUSE'}
-              </button>
-
-              <button
-                className='btn-spotify'
-                onClick={() => {
-                  player?.nextTrack();
-                }}>
-                &gt;&gt;
-              </button>
-            </div>
-          </div>
-        </div>
+        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
+          No Track Playing
+        </Center>
       </>
     );
   }
@@ -407,6 +313,7 @@ export function SearchAndQueue({
   addSongToQueue,
   sortedQueue,
   authToken,
+  currentTrack,
 }: {
   searchValue: string;
   handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -417,6 +324,7 @@ export function SearchAndQueue({
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
   authToken: string;
+  currentTrack: Song;
 }): JSX.Element {
   return (
     <>
@@ -452,7 +360,7 @@ export function SearchAndQueue({
                   <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
                   <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
                   <TableCell style={{ fontWeight: 'bolder' }}>Duration</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Play</TableCell>
+                  {/* <TableCell style={{ fontWeight: 'bolder' }}>Play</TableCell> */}
                   <TableCell style={{ fontWeight: 'bolder' }}>+ Queue</TableCell>
                 </TableRow>
               </TableHead>
@@ -463,13 +371,7 @@ export function SearchAndQueue({
                   searchResults.tracks.items &&
                   searchResults.tracks.items.map((item: any) => {
                     return (
-                      <TableRow
-                        key={item.id}
-                        onClick={async () => {
-                          if (authToken) {
-                            await SpotifyController.playTrack(authToken, item.uri);
-                          }
-                        }}>
+                      <TableRow key={item.id}>
                         <TableCell> {item.name} </TableCell>
                         <TableCell> {item.artists[0].name}</TableCell>
                         <TableCell> {item.duration_ms}</TableCell>
@@ -483,7 +385,7 @@ export function SearchAndQueue({
       </GridItem>
       <GridItem colSpan={1} bg={'black'} width={'10%'} justifySelf='center'></GridItem>
       <GridItem colSpan={25}>
-        <SpotifyWebPlayback token={authToken} />
+        <SpotifyWebPlayback token={authToken} currentTrack={currentTrack} />
         <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
           Queue
         </Center>
@@ -752,6 +654,7 @@ export function JukeBoxArea({
         addSongToQueue={addSongToQueue}
         sortedQueue={sortedQueue}
         authToken={spotifyAuthToken}
+        currentTrack={sortedQueue[0]}
       />
     );
   }

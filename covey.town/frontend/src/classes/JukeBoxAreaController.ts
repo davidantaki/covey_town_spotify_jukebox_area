@@ -16,7 +16,6 @@ export function createSong(addedBy: string, songJson: any): Song {
   const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
   const spotifyId: string = songJson.id;
   const upvotes = 0;
-  const downvotes = 0;
 
   return {
     title,

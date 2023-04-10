@@ -3,12 +3,13 @@ import Player from '../lib/Player';
 import {
   BoundingBox,
   JukeBoxArea as JukeBoxAreaModel,
+  Song,
   TownEmitter,
 } from '../types/CoveyTownSocket';
 import InteractableArea from './InteractableArea';
 
 export default class JukeBoxArea extends InteractableArea {
-  public songQueue?: string[];
+  public songQueue: Song[];
 
   /** The conversation area is "active" when there are players inside of it  */
   public get isActive(): boolean {
@@ -42,7 +43,7 @@ export default class JukeBoxArea extends InteractableArea {
   public remove(player: Player) {
     super.remove(player);
     if (this._occupants.length === 0) {
-      this.songQueue = undefined;
+      this.songQueue = [];
       this._emitAreaChanged();
     }
   }
@@ -73,6 +74,6 @@ export default class JukeBoxArea extends InteractableArea {
       throw new Error(`Malformed viewing area ${name}`);
     }
     const rect: BoundingBox = { x: mapObject.x, y: mapObject.y, width, height };
-    return new JukeBoxArea({ id: name, occupantsByID: [] }, rect, broadcastEmitter);
+    return new JukeBoxArea({ id: name, songQueue: [] }, rect, broadcastEmitter);
   }
 }

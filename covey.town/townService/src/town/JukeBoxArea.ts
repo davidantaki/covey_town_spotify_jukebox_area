@@ -1,6 +1,7 @@
 import { ITiledMapObject } from '@jonbell/tiled-map-type-guard';
 import Player from '../lib/Player';
 import {
+  Song,
   BoundingBox,
   TownEmitter,
   JukeBoxArea as JukeBoxAreaModel,
@@ -8,7 +9,7 @@ import {
 import InteractableArea from './InteractableArea';
 
 export default class JukeBoxArea extends InteractableArea {
-  private _songQueue: string[];
+  private _songQueue: Song[];
 
   public get songQueue() {
     return this._songQueue;

@@ -1,7 +1,31 @@
 import { EventEmitter } from 'events';
-import { useEffect } from 'react';
 import TypedEventEmitter from 'typed-emitter';
 import { JukeBoxArea as JukeBoxAreaModel } from '../types/CoveyTownSocket';
+
+export interface Song {
+  title: string;
+  artists: string[];
+  spotifyId: string;
+  addedBy: string;
+  upvotes: number;
+  songJson: any;
+}
+
+export function createSong(addedBy: string, songJson: any): Song {
+  const title: string = songJson.name;
+  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
+  const spotifyId: string = songJson.id;
+  const upvotes = 0;
+
+  return {
+    title,
+    artists,
+    spotifyId,
+    addedBy,
+    upvotes,
+    songJson: { ...songJson },
+  };
+}
 
 /**
  * The events that a JukeBoxAreaController can emit
@@ -11,7 +35,7 @@ export type JukeBoxAreaEvents = {
    * A queueChange event indicates that the song queue has changed.
    * Listeners are passed the new state in the updated queue.
    */
-  jukeBoxQueueChange: (Song: string) => void;
+  jukeBoxQueueChange: (queue: Song[]) => void;
 };
 
 /**
@@ -25,8 +49,6 @@ export type JukeBoxAreaEvents = {
 export default class JukeBoxAreaController extends (EventEmitter as new () => TypedEventEmitter<JukeBoxAreaEvents>) {
   private _model: JukeBoxAreaModel;
 
-  private _playersWhoStarred: string[];
-
   /**
    * Constructs a new JukeBoxAreaController, initialized with the state of the
    * provided jukeBoxAreaModel.
@@ -36,7 +58,6 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
   constructor(jukeBoxAreaModel: JukeBoxAreaModel) {
     super();
     this._model = jukeBoxAreaModel;
-    this._playersWhoStarred = [];
   }
 
   /**
@@ -48,20 +69,13 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
     return this._model.id;
   }
 
-  public get queue(): string[] {
+  public get queue(): Song[] {
     return this._model.songQueue;
   }
 
-  public set queue(queue: string[]) {
+  public set queue(queue: Song[]) {
     this._model.songQueue = queue;
-  }
-
-  public get playersWhoStarred(): string[] {
-    return this._playersWhoStarred;
-  }
-
-  public addPlayerWhoStarred(playerID: string) {
-    this._playersWhoStarred.push(playerID);
+    this.emit('jukeBoxQueueChange', queue);
   }
 
   /**
@@ -83,18 +97,18 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
   }
 }
 
-export function useSongQueue(controller: JukeBoxAreaController): string[] | undefined {
-  const res: string[] = [];
+// export function useSongQueue(controller: JukeBoxAreaController): Song[] | undefined {
+//   const res: Song[] = [];
 
-  useEffect(() => {
-    function addSong(song: string) {
-      res.push(song);
-    }
-    controller.addListener('jukeBoxQueueChange', addSong);
-    return () => {
-      controller.removeListener('jukeBoxQueueChange', addSong);
-    };
-  });
+//   useEffect(() => {
+//     function addSong(queue: Song[]) {
+//       res.push(queue);
+//     }
+//     controller.addListener('jukeBoxQueueChange', addSong);
+//     return () => {
+//       controller.removeListener('jukeBoxQueueChange', addSong);
+//     };
+//   });
 
-  return res;
-}
+//   return res;
+// }

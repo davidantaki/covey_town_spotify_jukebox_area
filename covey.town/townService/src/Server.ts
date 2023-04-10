@@ -7,7 +7,6 @@ import { ValidateError } from 'tsoa';
 import fs from 'fs/promises';
 import { Server as SocketServer } from 'socket.io';
 import * as dotenv from 'dotenv';
-import QueryString from 'qs';
 import { RegisterRoutes } from '../generated/routes';
 import TownsStore from './lib/TownsStore';
 import { ClientToServerEvents, ServerToClientEvents } from './types/CoveyTownSocket';
@@ -23,6 +22,8 @@ const socketServer = new SocketServer<ClientToServerEvents, ServerToClientEvents
   cors: { origin: '*' },
 });
 dotenv.config();
+
+const { CLIENT_URL } = process.env;
 
 // Initialize the towns store with a factory that creates a broadcast emitter for a town
 TownsStore.initializeTownsStore((townID: string) => socketServer.to(townID));
@@ -70,31 +71,31 @@ app.use(
   },
 );
 
-const { SPOTIFY_CLIENT_ID, SPOTIFY_REDIRECT_URI } = process.env;
-
-/**
- * Endpoint to allow users to login. Going to http://localhost:8081/login will bring you to
- * Spotify login page, where after granting your credentials, it redirects the page to somewhere
- * that gives the "authorization" code. This can be refactored in the future.
- */
-app.get('/login', (_req, res) => {
-  const queryParams = QueryString.stringify({
-    client_id: SPOTIFY_CLIENT_ID,
-    response_type: 'code',
-    redirect_uri: SPOTIFY_REDIRECT_URI,
-  });
-  res.redirect(`https://accounts.spotify.com/authorize?${queryParams}`);
-});
-
 /**
  * Callback endpoint where the "redirect uri" is located and the user can
  * go to. This is where we get the exchange the authorization code for the
  * authentication token.
+ *
+ * Inspiration from here:
+ * https://stackoverflow.com/questions/49788580/how-to-redirect-to-correct-client-route-after-social-auth-with-passport-react
+ * http://gregtrowbridge.com/node-authentication-with-google-oauth-part2-jwts/
  */
 app.get('/callback', async (req, res) => {
   const code = (req.query.code as string) || null;
-  const tokenInformation = await SpotifyController.token(code);
-  res.send(tokenInformation);
+  try {
+    const response: any = await SpotifyController.token(code);
+    if (response.status !== 200) {
+      res.send(`Error: ${res}`);
+      return;
+    }
+    // console.log(response);
+    const token = response.data.access_token;
+    res.redirect(`${CLIENT_URL}/jukebox-spotify-login/save-auth-token/${token}`);
+    // console.log(`token:${token}`);
+  } catch (error) {
+    console.log(error);
+    res.send(`Error: ${error}`);
+  }
 });
 
 // Start the configured server, defaulting to port 8081 if $PORT is not set

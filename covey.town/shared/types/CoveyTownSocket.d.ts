@@ -15,23 +15,23 @@ export type TownJoinResponse = {
   isPubliclyListed: boolean;
   /** Current state of interactables in this town */
   interactables: Interactable[];
-}
+};
 
 export type Interactable = ViewingArea | ConversationArea | JukeBoxArea;
 
 export type TownSettingsUpdate = {
   friendlyName?: string;
   isPubliclyListed?: boolean;
-}
+};
 
-export type Direction = 'front' | 'back' | 'left' | 'right';
+export type Direction = "front" | "back" | "left" | "right";
 export interface Player {
   id: string;
   userName: string;
   location: PlayerLocation;
-};
+}
 
-export type XY = { x: number, y: number };
+export type XY = { x: number; y: number };
 
 export interface PlayerLocation {
   /* The CENTER x coordinate of this player's location */
@@ -42,7 +42,7 @@ export interface PlayerLocation {
   rotation: Direction;
   moving: boolean;
   interactableID?: string;
-};
+}
 export type ChatMessage = {
   author: string;
   sid: string;
@@ -54,13 +54,13 @@ export interface ConversationArea {
   id: string;
   topic?: string;
   occupantsByID: string[];
-};
+}
 export interface BoundingBox {
   x: number;
   y: number;
   width: number;
   height: number;
-};
+}
 
 export interface ViewingArea {
   id: string;
@@ -71,7 +71,7 @@ export interface ViewingArea {
 
 export interface JukeBoxArea {
   id: string;
-  songQueue: string[];
+  songQueue: Song[];
 }
 
 export interface ServerToClientEvents {
@@ -89,4 +89,31 @@ export interface ClientToServerEvents {
   chatMessage: (message: ChatMessage) => void;
   playerMovement: (movementData: PlayerLocation) => void;
   interactableUpdate: (update: Interactable) => void;
+}
+
+export interface Song {
+  title: string;
+  artists: string[];
+  spotifyId: string;
+  addedBy: string;
+  upvotes: number;
+  songJson: any;
+}
+
+export function createSong(addedBy: string, songJson: any): Song {
+  const title: string = songJson.name;
+  const artists: string[] = songJson.artists.map(
+    (artist: { name: string }) => artist.name
+  );
+  const spotifyId: string = songJson.id;
+  const upvotes = 0;
+
+  return {
+    title,
+    artists,
+    spotifyId,
+    addedBy,
+    upvotes,
+    songJson: { ...songJson },
+  };
 }

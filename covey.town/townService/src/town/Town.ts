@@ -157,15 +157,12 @@ export default class Town {
           (viewingArea as ViewingArea).updateModel(update);
         }
       } else if (isJukeBoxArea(update)) {
-        // forward interactableUpdate
         newPlayer.townEmitter.emit('interactableUpdate', update);
-        // find an existing poster session area with the same ID
-        const jukeboxArea = <JukeBoxArea>(
-          this._interactables.find(area => area.id === update.id && area instanceof JukeBoxArea)
+        const jukeBoxArea = this._interactables.find(
+          eachInteractable => eachInteractable.id === update.id,
         );
-        // updatemodel if theres an existing poster session area with the same ID
-        if (jukeboxArea) {
-          jukeboxArea.updateModel(update as JukeBoxArea);
+        if (jukeBoxArea) {
+          (jukeBoxArea as JukeBoxArea).updateModel(update);
         }
       }
     });

@@ -1,78 +1,199 @@
+/// <reference types='@types/spotify-web-playback-sdk' />;
 import {
+  Box,
   Button,
-  FormControl,
-  FormLabel,
+  Center,
+  Flex,
+  Grid,
+  GridItem,
   Input,
+  InputGroup,
   Modal,
-  ModalBody,
   ModalCloseButton,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  useToast,
-  Container,
-  Stack,
-  Text,
-  InputGroup,
-  InputRightElement,
-  InputLeftElement,
   useDisclosure,
-  Image,
-  Box,
-  Badge,
+  useToast,
   VStack,
-  Grid,
-  GridItem,
-  Link,
 } from '@chakra-ui/react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from '@material-ui/core';
+import axios from 'axios';
+import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
-import JukeBoxAreaController from '../../../classes/JukeBoxAreaController';
 import useTownController from '../../../hooks/useTownController';
+import SpotifyController from '../../../spotify/SpotifyController';
+import { JukeboxSpotifyLogin } from '../Login';
+import { QueueItem } from '../QueueItem';
+import { SearchResult } from '../SearchResult';
+import { SpotifyWebPlayback } from '../WebPlaybackSDK';
 import JukeBoxAreaInteractable from './JukeBoxArea';
-import QueryString from 'qs';
 
-const ALLOWED_DRIFT = 3;
+export interface Song {
+  title: string;
+  artists: string[];
+  spotifyId: string;
+  addedBy: string;
+  upvotes: number;
+  songJson: any;
+}
+
+export function createSong(addedBy: string, songJson: any): Song {
+  const title: string = songJson.name;
+  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
+  const spotifyId: string = songJson.id;
+  const upvotes = 0;
+
+  return {
+    title,
+    artists,
+    spotifyId,
+    addedBy,
+    upvotes,
+    songJson: { ...songJson },
+  };
+}
+
 export class MockReactPlayer extends ReactPlayer {
   render(): React.ReactNode {
     return <></>;
   }
 }
 
-export function SearchResult({
-  songTitle,
-  songArtist,
-  songDuration,
+// /**
+//  * Used while getting the spotify token to update our main component
+//  * so that it continues to retrieve the token from local storage to check
+//  * if it is valid.
+//  */
+// export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
+//   const [timeSeconds, setSeconds] = useState<number>(0);
+//   const getTime = () => {
+//     const time = Date.now();
+//     setSeconds(Math.floor((time / 1000) % 60));
+//   };
+export function SearchAndQueue({
+  searchValue,
+  handleSearchChange,
+  findSongs,
+  upvoteSong,
+  searchResults,
+  currentSong,
+  addSongToQueue,
+  sortedQueue,
+  authToken,
+  currentTrack,
 }: {
-  songTitle: string;
-  songArtist: string;
-  songDuration: string;
+  searchValue: string;
+  handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  findSongs: () => void;
+  upvoteSong: (songId: string) => void;
+  searchResults: any;
+  currentSong: Song | undefined;
+  addSongToQueue: (song: Song) => void;
+  sortedQueue: Song[];
+  authToken: string;
+  currentTrack: Song;
 }): JSX.Element {
-  const property = {
-    imageUrl: 'https://bit.ly/2Z4KKcF',
-    imageAlt: 'Rear view of modern home with pool',
-    beds: 3,
-    baths: 2,
-    title: 'Modern home in city center in the heart of historic Los Angeles',
-    formattedPrice: '$1,900.00',
-    reviewCount: 34,
-    rating: 4,
-  };
-
   return (
-    <Grid templateRows='repeat(1, 1fr)' templateColumns='repeat(3, 1fr)' gap={50} p='0'>
-      <GridItem colSpan={1} h='10' bg='transparent'>
-        {songTitle}
+    <>
+      <GridItem colSpan={25}>
+        <Flex gap={'5px'}>
+          <Box width={'85%'} marginLeft={'2%'}>
+            <InputGroup>
+              <Input
+                pr='4.5rem'
+                type='tel'
+                value={searchValue}
+                onChange={handleSearchChange}
+                onKeyPress={e => {
+                  if (e.key === 'Enter') {
+                    findSongs();
+                  }
+                }}
+                placeholder='Search Songs'
+              />
+            </InputGroup>
+          </Box>
+          <Box width={'15%'} marginRight={'2%'}>
+            <Button width={'100%'} onClick={findSongs}>
+              Search!
+            </Button>
+          </Box>
+        </Flex>
+        <VStack>
+          <TableContainer style={{ paddingLeft: '2%' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Duration</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>+ Queue</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {/* Map search results response to SearchResults */}
+                {searchResults &&
+                  searchResults.tracks &&
+                  searchResults.tracks.items &&
+                  searchResults.tracks.items.map((item: any) => {
+                    return (
+                      <SearchResult
+                        key={item.id}
+                        songTitle={item.name}
+                        songArtist={item.artists[0].name}
+                        songDuration={item.duration_ms}
+                        songUri={item.uri}
+                        addSongToQueueFunc={addSongToQueue}
+                      />
+                    );
+                  })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </VStack>
       </GridItem>
-      <GridItem colSpan={1} h='10' bg='transparent'>
-        {songArtist}
+      <GridItem colSpan={1} bg={'black'} width={'10%'} justifySelf='center'></GridItem>
+      <GridItem colSpan={25}>
+        <SpotifyWebPlayback token={authToken} currentTrack={currentTrack} />
+        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
+          Current Song: {currentSong?.title}
+        </Center>
+        <VStack>
+          <TableContainer style={{ paddingRight: '2%' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
+                  <TableCell style={{ fontWeight: 'bolder' }}>Vote</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {sortedQueue.map((song: Song) => {
+                  return (
+                    <QueueItem
+                      key={song.spotifyId}
+                      song={song}
+                      onUpvote={() => upvoteSong(song.spotifyId)}
+                    />
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </VStack>
       </GridItem>
-      <GridItem colSpan={1} h='10' bg='transparent'>
-        {songDuration}
-      </GridItem>
-    </Grid>
+    </>
   );
 }
 
@@ -85,27 +206,49 @@ export function SearchResult({
 export function JukeBoxArea({
   jukeBoxArea,
 }: {
-  // isOpenInit: boolean;
-  // close: () => void;
   jukeBoxArea: JukeBoxAreaInteractable;
 }): JSX.Element {
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
   const [searchValue, setSearchValue] = React.useState('');
-  const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
-    setSearchValue(event.target.value);
-    // SpotifyController.token('null');
-    // SpotifyController.search(searchValue, SpotifyController.token()).then((res) => {
-    //   console.log(res);
-    // }
+  const [spotifyAuthToken, setSpotifyAuthToken] = useState<string>('');
+  // Current search results JSON Object
+  const [searchResults, setSearchResults] = useState<any>();
+  const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [currentSong, setCurrentSong] = useState<Song | undefined>(undefined);
+  const [queue, setQueue] = useState(jukeBoxAreaController.queue);
+  const [playerVotes, setPlayerVotes] = useState<{
+    [songId: string]: 'upvote' | null;
+  }>({});
+
+  // Function to update queue
+  const updateQueue = (newQueue: Song[]) => {
+    setQueue(newQueue);
+    jukeBoxAreaController.queue = newQueue;
+    townController.emitJukeBoxAreaUpdate(jukeBoxAreaController);
   };
 
+  const handleSearchChange = (event: { target: { value: React.SetStateAction<string> } }) => {
+    setSearchValue(event.target.value);
+  };
   const closeModal = useCallback(() => {
     townController.unPause();
   }, [townController]);
-  const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [queue, setQueue] = useState(jukeBoxAreaController.queue);
+
+  const [, setSeconds] = useState<number>(0);
+  useEffect(() => {
+    if (isOpen && spotifyAuthToken === '') {
+      const getTime = () => {
+        const time = Date.now();
+        setSeconds(Math.floor((time / 1000) % 60));
+      };
+
+      const interval = setInterval(() => getTime(), 1000);
+      console.log('interval: ', interval);
+      return () => clearInterval(interval);
+    }
+  }, [isOpen, spotifyAuthToken]);
 
   useEffect(() => {
     if (isOpen) {
@@ -115,89 +258,139 @@ export function JukeBoxArea({
     }
   }, [townController, isOpen]);
   useEffect(() => {
-    const setQeueue = (q: string[] | undefined) => {
+    const setQueueListener = (q: Song[] | undefined) => {
       if (!q) {
         townController.interactableEmitter.emit('endIteraction', jukeBoxAreaController);
       } else {
         setQueue(q);
       }
     };
-    // jukeBoxAreaController.addListener('jukeBoxQueueChange', setQueue);
-    // return () => {
-    //   jukeBoxAreaController.removeListener('jukeBoxQueueChange', setQueue);
-    // };
+    jukeBoxAreaController.addListener('jukeBoxQueueChange', setQueueListener);
+    return () => {
+      jukeBoxAreaController.removeListener('jukeBoxQueueChange', setQueueListener);
+    };
   }, [jukeBoxAreaController, townController]);
+
+  useEffect(() => {
+    if (!currentSong) {
+      setQueue(prevQueue => {
+        if (prevQueue.length > 0) {
+          setCurrentSong(prevQueue[0]);
+          return prevQueue.slice(1);
+        }
+        return prevQueue;
+      });
+    }
+  }, [currentSong, queue]);
 
   // set is open to true if it is false
   if (!isOpen) {
     onOpen();
   }
 
-  const [token, setToken] = useState('');
+  const findSongs = async () => {
+    if (searchValue) {
+      const songs = await SpotifyController.search(spotifyAuthToken, searchValue, 'track');
+      setSearchResults(songs);
+    } else {
+      setSearchResults('');
+    }
+  };
 
-  // useEffect(() => {
-  //   const hash = window.location.hash;
-  //   let localToken = window.localStorage.getItem('token');
+  const upvoteSong = (songId: string) => {
+    if (playerVotes[songId] === 'upvote') {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | null } = {
+        ...playerVotes,
+        [songId]: null,
+      };
+      setPlayerVotes(updatedPlayerVotes);
 
-  //   if (!localToken && hash) {
-  //     localToken = hash
-  //       .substring(1)
-  //       .split('&')
-  //       .find(elem => elem.startsWith('access_token'))
-  //       .split('=')[1];
+      const updatedQueue = [...queue];
+      updatedQueue.forEach((song, index) => {
+        if (song.spotifyId === songId) {
+          updatedQueue[index] = { ...song, upvotes: song.upvotes - 1 };
+        }
+      });
+      updateQueue(updatedQueue);
+    } else {
+      const updatedPlayerVotes: { [songId: string]: 'upvote' | null } = {
+        ...playerVotes,
+        [songId]: 'upvote',
+      };
+      setPlayerVotes(updatedPlayerVotes);
 
-  //     window.location.hash = '';
-  //     window.localStorage.setItem('token', localToken);
-  //   }
+      const updatedQueue = [...queue];
+      updatedQueue.forEach((song, index) => {
+        if (song.spotifyId === songId) {
+          updatedQueue[index] = { ...song, upvotes: song.upvotes + 1 };
+        }
+      });
+      updateQueue(updatedQueue);
+    }
+  };
 
-  //   setToken(localToken);
-  // }, []);
+  const addSongToQueue = (song: Song) => {
+    const songInQueue = queue.some(queuedSong => queuedSong.spotifyId === song.spotifyId);
 
-  // const logout = () => {
-  //   setToken('');
-  //   window.localStorage.removeItem('token');
-  // };
+    if (songInQueue) {
+      toast({
+        title: 'That song is already in the queue',
+        status: 'warning',
+        duration: 3000,
+        isClosable: true,
+      });
+    } else {
+      const updatedQueue = [...queue, song];
+      updateQueue(updatedQueue);
+      console.log('updated');
+    }
+  };
 
-  // const spotifyLogin = useCallback(async () => {
-  //   try {
-  //     await SpotifyController.login();
-  //     townController.unPause();
-  //     closeModal();
-  //   } catch (err) {
-  //     if (err instanceof Error) {
-  //       toast({
-  //         title: 'Unable to create conversation',
-  //         description: err.toString(),
-  //         status: 'error',
-  //       });
-  //     } else {
-  //       console.trace(err);
-  //       toast({
-  //         title: 'Unexpected Error',
-  //         status: 'error',
-  //       });
-  //     }
-  //   }
-  // }, [closeModal, townController, toast]);
+  const sortedQueue = queue.slice().sort((a, b) => b.upvotes - a.upvotes);
 
-  // spotifyLogin();
+  useEffect(() => {
+    // Cleanup function
+    return () => {
+      // Cancel any pending requests or subscriptions
+      // to avoid updating the state of an unmounted component
+      // Here we're cancelling the fetchData() request
+      const source = axios.CancelToken.source();
+      source.cancel('Component unmounted');
+    };
+  }, [searchValue]);
 
-  const REACT_APP_TOWNS_SERVICE_URL = 'http://localhost:8081';
-  const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
-  const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-  const SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback';
-  const SPOTIFY_AUTH_ENDPOINT = 'https://accounts.spotify.com/authorize';
-  const SPOTIFY_RESPONSE_TYPE = 'token';
+  let toRender;
 
-  const scopes = [
-    'streaming',
-    'user-read-email',
-    'user-read-private',
-    'user-library-read',
-    'user-library-modify',
-    'user-read-playback-state',
-    'user-modify-playback-state',
-  ];
+  // Check if the user is logged in.
+  if (spotifyAuthToken === '') {
+    const authToken = window.localStorage.getItem('spotifyAuthToken');
+    if (authToken !== null) {
+      setSpotifyAuthToken(authToken);
+    } else {
+      toRender = (
+        <>
+          <GridItem>
+            <JukeboxSpotifyLogin />
+          </GridItem>
+        </>
+      );
+    }
+  } else {
+    toRender = (
+      <SearchAndQueue
+        searchValue={searchValue}
+        handleSearchChange={handleSearchChange}
+        findSongs={findSongs}
+        upvoteSong={upvoteSong}
+        searchResults={searchResults}
+        currentSong={currentSong}
+        addSongToQueue={addSongToQueue}
+        sortedQueue={sortedQueue}
+        authToken={spotifyAuthToken}
+        currentTrack={sortedQueue[0]}
+      />
+    );
+  }
 
   return (
     <>
@@ -212,30 +405,9 @@ export function JukeBoxArea({
         <ModalContent>
           <ModalHeader>JukeBox</ModalHeader>
           <ModalCloseButton />
-          <InputGroup>
-            <Input
-              pr='4.5rem'
-              type='tel'
-              value={searchValue}
-              onChange={handleSearchChange}
-              placeholder='Search Songs'
-            />
-          </InputGroup>
-          <Text mt='md'>
-            Get one{' '}
-            <Link
-              isExternal
-              href={`https://accounts.spotify.com/en/authorize?response_type=token&client_id=${SPOTIFY_CLIENT_ID}&redirect_uri=${SPOTIFY_REDIRECT_URI}&scope=${scopes.join(
-                '%20',
-              )}&show_dialog=true`}>
-              here
-            </Link>
-          </Text>
-          <VStack>
-            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-            <SearchResult songTitle='Song Title' songArtist='Song Artist' songDuration='3:00' />
-          </VStack>
+          <Grid templateColumns='repeat(51, 1fr)' templateRows='repeat(1fr, 2)'>
+            {toRender}
+          </Grid>
           <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>

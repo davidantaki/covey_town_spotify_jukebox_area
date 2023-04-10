@@ -575,6 +575,7 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
 
         this._conversationAreas = [];
         this._viewingAreas = [];
+        this._jukeBoxAreas = [];
         initialData.interactables.forEach(eachInteractable => {
           if (isConversationArea(eachInteractable)) {
             this._conversationAreasInternal.push(
@@ -585,6 +586,8 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
             );
           } else if (isViewingArea(eachInteractable)) {
             this._viewingAreas.push(new ViewingAreaController(eachInteractable));
+          } else if (isJukeBoxArea(eachInteractable)) {
+            this._jukeBoxAreas.push(new JukeBoxAreaController(eachInteractable));
           }
         });
         this._userID = initialData.userID;
@@ -645,6 +648,10 @@ export default class TownController extends (EventEmitter as new () => TypedEmit
    */
   public emitViewingAreaUpdate(viewingArea: ViewingAreaController) {
     this._socket.emit('interactableUpdate', viewingArea.viewingAreaModel());
+  }
+
+  public emitJukeBoxAreaUpdate(jukeBoxArea: JukeBoxAreaController) {
+    this._socket.emit('interactableUpdate', jukeBoxArea.jukeBoxAreaModel());
   }
 
   /**

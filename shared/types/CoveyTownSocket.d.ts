@@ -91,29 +91,31 @@ export interface ClientToServerEvents {
   interactableUpdate: (update: Interactable) => void;
 }
 
+interface Album {
+  id: string;
+  name: string;
+  // Add other properties if needed
+}
+
+interface Artist {
+  id: string;
+  name: string;
+  // Add other properties if needed
+}
+
+interface Track {
+  id: string;
+  name: string;
+  artists: Artist[];
+  album: Album;
+  // Add other properties if needed
+}
+
 export interface Song {
   title: string;
   artists: string[];
   spotifyId: string;
   addedBy: string;
   upvotes: number;
-  songJson: any;
-}
-
-export function createSong(addedBy: string, songJson: any): Song {
-  const title: string = songJson.name;
-  const artists: string[] = songJson.artists.map(
-    (artist: { name: string }) => artist.name
-  );
-  const spotifyId: string = songJson.id;
-  const upvotes = 0;
-
-  return {
-    title,
-    artists,
-    spotifyId,
-    addedBy,
-    upvotes,
-    songJson: { ...songJson },
-  };
+  songJson: Track;
 }

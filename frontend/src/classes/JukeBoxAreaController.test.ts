@@ -1,7 +1,7 @@
 import TownController from './TownController';
 import JukeBoxAreaController, { JukeBoxAreaEvents, Song } from './JukeBoxAreaController';
 import { MockProxy, mock, mockClear } from 'jest-mock-extended';
-import { JukeBoxArea } from '../types/CoveyTownSocket';
+import { JukeBoxArea, Track } from '../types/CoveyTownSocket';
 
 describe('Jukebox Song Queue', () => {
   let testJukeBoxArea: JukeBoxArea;
@@ -19,7 +19,12 @@ describe('Jukebox Song Queue', () => {
           spotifyId: 'spotify:id',
           addedBy: 'test',
           upvotes: 0,
-          songJson: '{someJson: 0}',
+          songJson: {
+            id: 'testId',
+            name: 'testName',
+            artists: [],
+            album: { id: 'testId', name: 'testAlbumName' },
+          } as Track,
         },
       ],
     };

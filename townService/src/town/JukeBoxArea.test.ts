@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import Player from '../lib/Player';
 import { getLastEmittedEvent } from '../TestUtils';
 import JukeBoxArea from './JukeBoxArea';
-import { Song, TownEmitter } from '../types/CoveyTownSocket';
+import { Song, TownEmitter, Track } from '../types/CoveyTownSocket';
 
 describe('JukeBoxArea', () => {
   const testAreaBox = { x: 100, y: 100, width: 100, height: 100 };
@@ -17,7 +17,12 @@ describe('JukeBoxArea', () => {
     spotifyId: 'test spotifyId2',
     addedBy: 'test addedBy2',
     upvotes: 2,
-    songJson: 'test songJson2',
+    songJson: {
+      id: 'testId',
+      name: 'testName',
+      artists: [],
+      album: { id: 'testId', name: 'testAlbumName' },
+    } as Track,
   };
   const song3: Song = {
     title: 'test song3',
@@ -25,7 +30,12 @@ describe('JukeBoxArea', () => {
     spotifyId: 'test spotifyId3',
     addedBy: 'test addedBy3',
     upvotes: 3,
-    songJson: 'test songJson3',
+    songJson: {
+      id: 'testId',
+      name: 'testName',
+      artists: [],
+      album: { id: 'testId', name: 'testAlbumName' },
+    } as Track,
   };
   const songQueue: Song[] = [song2, song3];
 

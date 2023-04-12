@@ -2,16 +2,36 @@ import { EventEmitter } from 'events';
 import TypedEventEmitter from 'typed-emitter';
 import { JukeBoxArea as JukeBoxAreaModel } from '../types/CoveyTownSocket';
 
+interface Album {
+  id: string;
+  name: string;
+  // Add other properties if needed
+}
+
+interface Artist {
+  id: string;
+  name: string;
+  // Add other properties if needed
+}
+
+export interface Track {
+  id: string;
+  name: string;
+  artists: Artist[];
+  album: Album;
+  // Add other properties if needed
+}
+
 export interface Song {
   title: string;
   artists: string[];
   spotifyId: string;
   addedBy: string;
   upvotes: number;
-  songJson: any;
+  songJson: Track;
 }
 
-export function createSong(addedBy: string, songJson: any): Song {
+export function createSong(addedBy: string, songJson: Track): Song {
   const title: string = songJson.name;
   const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
   const spotifyId: string = songJson.id;

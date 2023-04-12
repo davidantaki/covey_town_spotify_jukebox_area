@@ -38,7 +38,20 @@ describe('Jukebox Song Queue', () => {
         spotifyId: 'some:spotify:id',
         addedBy: 'tester',
         upvotes: 1,
-        songJson: '{anotherJson: 0}',
+        songJson: {
+          id: 'some:spotify:id',
+          name: 'another song',
+          artists: [
+            {
+              id: 'artist:id',
+              name: 'artist',
+            },
+          ],
+          album: {
+            id: 'album:id',
+            name: 'album name',
+          },
+        },
       };
       const newQueue = [...testJukeBoxController.queue];
       newQueue.push(song);

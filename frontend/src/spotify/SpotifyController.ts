@@ -1,7 +1,6 @@
 import QueryString from 'qs';
 
 const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
-const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
 const SPOTIFY_REDIRECT_URI = 'https://covey-town-jukebox.herokuapp.com/callback';
 
 /**

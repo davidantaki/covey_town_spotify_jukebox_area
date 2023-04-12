@@ -24,7 +24,15 @@ export function SearchResult({
       spotifyId: songUri,
       addedBy: 'test',
       upvotes: 0,
-      songJson: {},
+      songJson: {
+        id: '',
+        name: '',
+        artists: [],
+        album: {
+          id: '',
+          name: '',
+        },
+      },
     };
     addSongToQueueFunc(song);
   };

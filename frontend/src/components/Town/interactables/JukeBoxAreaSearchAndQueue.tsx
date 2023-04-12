@@ -37,6 +37,7 @@ import { QueueItem } from '../QueueItem';
 import { SearchResult } from '../SearchResult';
 import { SpotifyWebPlayback } from '../WebPlaybackSDK';
 import JukeBoxAreaInteractable from './JukeBoxArea';
+import { Track } from '../../../classes/JukeBoxAreaController';
 
 export interface Song {
   title: string;
@@ -44,10 +45,34 @@ export interface Song {
   spotifyId: string;
   addedBy: string;
   upvotes: number;
-  songJson: any;
+  songJson: Track;
 }
 
-export function createSong(addedBy: string, songJson: any): Song {
+export interface SearchResultType {
+  track: {
+    item: {
+      id: string;
+      name: string;
+      artists: { name: string }[];
+      duration: string;
+      uri: string;
+    };
+  };
+}
+
+export interface SearchResultsType {
+  tracks: {
+    items: {
+      id: string;
+      name: string;
+      artists: { name: string }[];
+      duration: string;
+      uri: string;
+    }[];
+  }[];
+}
+
+export function createSong(addedBy: string, songJson: Track): Song {
   const title: string = songJson.name;
   const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
   const spotifyId: string = songJson.id;
@@ -69,17 +94,6 @@ export class MockReactPlayer extends ReactPlayer {
   }
 }
 
-// /**
-//  * Used while getting the spotify token to update our main component
-//  * so that it continues to retrieve the token from local storage to check
-//  * if it is valid.
-//  */
-// export function UpateComponentTimerWhileGettingSpotifyToken(): JSX.Element {
-//   const [timeSeconds, setSeconds] = useState<number>(0);
-//   const getTime = () => {
-//     const time = Date.now();
-//     setSeconds(Math.floor((time / 1000) % 60));
-//   };
 export function SearchAndQueue({
   searchValue,
   handleSearchChange,
@@ -95,7 +109,7 @@ export function SearchAndQueue({
   handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   findSongs: () => void;
   upvoteSong: (songId: string) => void;
-  searchResults: any;
+  searchResults: SearchResultsType;
   currentSong: Song | undefined;
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
@@ -144,7 +158,7 @@ export function SearchAndQueue({
                 {searchResults &&
                   searchResults.tracks &&
                   searchResults.tracks.items &&
-                  searchResults.tracks.items.map((item: any) => {
+                  searchResults.tracks.items.map((item: SearchResultType) => {
                     return (
                       <SearchResult
                         key={item.id}
@@ -209,7 +223,7 @@ export function JukeBoxArea({
   const [searchValue, setSearchValue] = React.useState('');
   const [spotifyAuthToken, setSpotifyAuthToken] = useState<string>('');
   // Current search results JSON Object
-  const [searchResults, setSearchResults] = useState<any>();
+  const [searchResults, setSearchResults] = useState<SearchResultsType>();
   const toast = useToast();
   const { isOpen, onOpen } = useDisclosure();
   const [currentSong, setCurrentSong] = useState<Song | undefined>(undefined);

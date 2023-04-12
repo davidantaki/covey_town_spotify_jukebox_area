@@ -2,7 +2,7 @@ import { Center, VStack } from '@chakra-ui/react';
 import { Table, TableBody, TableCell, TableContainer, TableRow } from '@material-ui/core';
 import React, { useEffect, useMemo, useState } from 'react';
 import SpotifyPlayer from 'spotify-web-playback';
-import { Song } from './interactables/JukeBoxAreaSearchAndQueue';
+import { Song } from '../../classes/JukeBoxAreaController';
 
 export function SpotifyWebPlayback({
   token,
@@ -12,12 +12,11 @@ export function SpotifyWebPlayback({
   currentTrack: Song | undefined;
 }): JSX.Element {
   const [isConnected, setConnected] = useState<boolean>(false);
-  const [isActive, setActive] = useState<boolean>(false);
 
   const spotifyPlayer = useMemo(() => {
     return new SpotifyPlayer('Covey.Town Spotify Player');
   }, []);
-  const uri = 'spotify:track:54flyrjcdnQdco7300avMJ';
+
   async function connectToSpotifyPlayer(authToken: string) {
     try {
       const response = await spotifyPlayer.connect(authToken);

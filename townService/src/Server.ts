@@ -12,7 +12,7 @@ import TownsStore from './lib/TownsStore';
 import { ClientToServerEvents, ServerToClientEvents } from './types/CoveyTownSocket';
 import { TownsController } from './town/TownsController';
 import { logError } from './Utils';
-import SpotifyController from './spotify/SpotifyController';
+import SpotifyController, { SpotifyTokenResponse } from './spotify/SpotifyController';
 
 // Create the server instances
 const app = Express();
@@ -83,7 +83,7 @@ app.use(
 app.get('/callback', async (req, res) => {
   const code = (req.query.code as string) || null;
   try {
-    const response: any = await SpotifyController.token(code);
+    const response: SpotifyTokenResponse = await SpotifyController.token(code);
     if (response.status !== 200) {
       res.send(`Error: ${res}`);
       return;
@@ -93,7 +93,6 @@ app.get('/callback', async (req, res) => {
     res.redirect(`${CLIENT_URL}/jukebox-spotify-login/save-auth-token/${token}`);
     // console.log(`token:${token}`);
   } catch (error) {
-    console.log(error);
     res.send(`Error: ${error}`);
   }
 });

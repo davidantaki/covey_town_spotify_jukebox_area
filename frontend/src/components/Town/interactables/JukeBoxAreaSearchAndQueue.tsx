@@ -104,7 +104,7 @@ export function SearchAndQueue({
   currentTrack: Song;
 }): JSX.Element {
   return (
-    <>
+    <Grid templateColumns='repeat(51, 1fr)' templateRows='repeat(1fr, 2)'>
       <GridItem colSpan={25}>
         <Flex gap={'5px'}>
           <Box width={'85%'} marginLeft={'2%'}>
@@ -193,7 +193,7 @@ export function SearchAndQueue({
           </TableContainer>
         </VStack>
       </GridItem>
-    </>
+    </Grid>
   );
 }
 
@@ -368,11 +368,9 @@ export function JukeBoxArea({
       setSpotifyAuthToken(authToken);
     } else {
       toRender = (
-        <>
-          <GridItem>
-            <JukeboxSpotifyLogin />
-          </GridItem>
-        </>
+        <Center marginTop={'20%'}>
+          <JukeboxSpotifyLogin />
+        </Center>
       );
     }
   } else {
@@ -405,9 +403,7 @@ export function JukeBoxArea({
         <ModalContent>
           <ModalHeader>JukeBox</ModalHeader>
           <ModalCloseButton />
-          <Grid templateColumns='repeat(51, 1fr)' templateRows='repeat(1fr, 2)'>
-            {toRender}
-          </Grid>
+          {toRender}
           <ModalFooter></ModalFooter>
         </ModalContent>
       </Modal>

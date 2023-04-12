@@ -2,7 +2,8 @@ import QueryString from 'qs';
 
 const SPOTIFY_CLIENT_ID = '97a7d37671c84613aaae12f0d590663a';
 const SPOTIFY_CLIENT_SECRET = '5c47a4ccaa1047ad8ca79e76a21d03f5';
-const SPOTIFY_REDIRECT_URI = 'https://covey-town-jukebox.herokuapp.com/callback';
+// const SPOTIFY_REDIRECT_URI = 'https://covey-town-jukebox.herokuapp.com/callback';
+const SPOTIFY_REDIRECT_URI = 'http://localhost:8081/callback';
 
 /**
  * Abstraction layer in code to communicate with Spotify API to receive authenication,

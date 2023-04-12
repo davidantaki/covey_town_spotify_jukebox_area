@@ -26,7 +26,7 @@ export function JukeboxSpotifyLogin(): JSX.Element {
   };
 
   return (
-    <Button colorScheme='teal' variant='solid' onClick={clickHandler}>
+    <Button colorScheme='teal' variant='solid' onClick={clickHandler} size='lg'>
       Login To Spotify
     </Button>
   );

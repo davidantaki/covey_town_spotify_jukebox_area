@@ -29,11 +29,20 @@ export function SearchResult({
     addSongToQueueFunc(song);
   };
 
+  const formatDuration = (duration: string) => {
+    const numDuration: number = +duration;
+    const secondsTotal = Math.floor(numDuration / 1000);
+    const minutes = Math.floor(secondsTotal / 60);
+    console.log(secondsTotal);
+    const seconds = secondsTotal - minutes * 60;
+    return `${minutes}:${seconds}`;
+  };
+
   return (
     <TableRow>
       <TableCell> {songTitle} </TableCell>
       <TableCell> {songArtist}</TableCell>
-      <TableCell> {songDuration}</TableCell>
+      <TableCell> {formatDuration(songDuration)}</TableCell>
       <TableCell>
         <Button onClick={addSongToQueueClickHandler}>
           <QueueMusicIcon />

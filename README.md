@@ -18,7 +18,9 @@ Running the application locally entails running both the backend service and a f
 
 ### Setting up the backend
 
-To run the backend, you will need a Twilio account. Twilio provides new accounts with $15 of credit, which is more than enough to get started.
+To run the backend, you will need a Twilio account and a Spotify account.
+
+Twilio provides new accounts with $15 of credit, which is more than enough to get started.
 To create an account and configure your local environment:
 
 1. Go to [Twilio](https://www.twilio.com/) and create an account. You do not need to provide a credit card to create a trial account.
@@ -32,6 +34,22 @@ To create an account and configure your local environment:
 | `TWILIO_API_KEY_SECRET` | The secret for the API key you created.   |
 | `TWILIO_API_AUTH_TOKEN` | Visible on your twilio account dashboard. |
 
+You will also need a Spotify account. 
+1. Go to the Spotify developer dashboard: https://developer.spotify.com/dashboard
+1. Click the “Create App” button.
+    1. Fill in the App name.
+    1. Fill in the Redirect URI as https://localhost:8081/callback
+1. Once in the App’s page, click the “Settings” button and put the following values into the `.env` file you created earlier.
+
+
+| Config Value            | Description                               |
+| ----------------------- | ----------------------------------------- |
+| `SPOTIFY_CLIENT_ID`    | Visible on your spotify account dashboard. |
+| `SPOTIFY_CLIENT_SECRET`    |  Visible on your spotify account dashboard. |
+| `SPOTIFY_REDIRECT_URI` | http://localhost:8081/callback |
+| `CLIENT_URL` | http://localhost:3000. |
+
+
 ### Starting the backend
 
 Once your backend is configured, you can start it by running `npm start` in the `townService` directory (the first time you run it, you will also need to run `npm install`).
@@ -39,7 +57,11 @@ The backend will automatically restart if you change any of the files in the `to
 
 ### Configuring the frontend
 
-Create a `.env` file in the `frontend` directory, with the line: `REACT_APP_TOWNS_SERVICE_URL=http://localhost:8081` (if you deploy the towns service to another location, put that location here instead)
+Create a `.env` file in the `frontend` directory, with the following values
+REACT_APP_TOWNS_SERVICE_URL=http://localhost:8081
+REACT_APP_SPOTIFY_CLIENT_ID=1d5bdd45d42c4c92a2a935346a2fc3e2
+REACT_APP_SPOTIFY_REDIRECT_URI=http://localhost:8081/callback
+
 
 ### Running the frontend
 

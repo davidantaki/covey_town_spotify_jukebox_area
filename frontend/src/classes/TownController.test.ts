@@ -61,7 +61,7 @@ describe('TownController', () => {
    */
   const emitEventAndExpectListenerFiring = <
     ReceivedEventFromSocket extends EventNames<ServerToClientEvents>,
-    ExpectedListenerName extends EventNames<TownEvents>,
+    ExpectedListenerName extends EventNames<TownEvents>
   >(
     receivedEvent: ReceivedEventFromSocket,
     receivedParameter: ReceivedEventParameter<ReceivedEventFromSocket>,

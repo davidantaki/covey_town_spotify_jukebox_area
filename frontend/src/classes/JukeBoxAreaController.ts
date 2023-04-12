@@ -119,18 +119,15 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
   }
 }
 
-// export function useSongQueue(controller: JukeBoxAreaController): Song[] | undefined {
-//   const res: Song[] = [];
-
+// export function useSongQueue(
+//   controller: JukeBoxAreaController,
+// ): [Song[], Dispatch<SetStateAction<Song[]>>] {
+//   const [queue, setQueue] = useState(controller.queue);
 //   useEffect(() => {
-//     function addSong(queue: Song[]) {
-//       res.push(queue);
-//     }
-//     controller.addListener('jukeBoxQueueChange', addSong);
+//     controller.addListener('jukeBoxQueueChange', setQueue);
 //     return () => {
-//       controller.removeListener('jukeBoxQueueChange', addSong);
+//       controller.removeListener('jukeBoxQueueChange', setQueue);
 //     };
-//   });
-
-//   return res;
+//   }, [controller]);
+//   return [queue, setQueue];
 // }

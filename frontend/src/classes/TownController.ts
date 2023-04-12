@@ -5,24 +5,24 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import TypedEmitter from 'typed-emitter';
 import Interactable from '../components/Town/Interactable';
-import ViewingArea from '../components/Town/interactables/ViewingArea';
 import JukeBoxArea from '../components/Town/interactables/JukeBoxArea';
+import ViewingArea from '../components/Town/interactables/ViewingArea';
 import { LoginController } from '../contexts/LoginControllerContext';
 import { TownsService, TownsServiceClient } from '../generated/client';
 import useTownController from '../hooks/useTownController';
 import {
   ChatMessage,
   CoveyTownSocket,
+  JukeBoxArea as JukeBoxAreaModel,
   PlayerLocation,
   TownSettingsUpdate,
   ViewingArea as ViewingAreaModel,
-  JukeBoxArea as JukeBoxAreaModel,
 } from '../types/CoveyTownSocket';
-import { isConversationArea, isViewingArea, isJukeBoxArea } from '../types/TypeUtils';
+import { isConversationArea, isJukeBoxArea, isViewingArea } from '../types/TypeUtils';
 import ConversationAreaController from './ConversationAreaController';
+import JukeBoxAreaController from './JukeBoxAreaController';
 import PlayerController from './PlayerController';
 import ViewingAreaController from './ViewingAreaController';
-import JukeBoxAreaController from './JukeBoxAreaController';
 
 const CALCULATE_NEARBY_PLAYERS_DELAY = 300;
 

@@ -5,9 +5,9 @@ import { PlayerLocation } from '../../types/CoveyTownSocket';
 import { Callback } from '../VideoCall/VideoFrontend/types';
 import Interactable from './Interactable';
 import ConversationArea from './interactables/ConversationArea';
+import JukeBoxArea from './interactables/JukeBoxArea';
 import Transporter from './interactables/Transporter';
 import ViewingArea from './interactables/ViewingArea';
-import JukeBoxArea from './interactables/JukeBoxArea';
 
 // Still not sure what the right type is here... "Interactable" doesn't do it
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -347,10 +347,10 @@ export default class TownGameScene extends Phaser.Scene {
 
     // Object layers in Tiled let you embed extra info into a map - like a spawn point or custom
     // collision shapes. In the tmx file, there's an object layer with a point named "Spawn Point"
-    const spawnPoint = this.map.findObject(
+    const spawnPoint = (this.map.findObject(
       'Objects',
       obj => obj.name === 'Spawn Point',
-    ) as unknown as Phaser.GameObjects.Components.Transform;
+    ) as unknown) as Phaser.GameObjects.Components.Transform;
 
     const labels = this.map.filterObjects('Objects', obj => obj.name === 'label');
     labels.forEach(label => {

@@ -4,7 +4,8 @@ import { BroadcastOperator } from 'socket.io';
 import IVideoClient from '../lib/IVideoClient';
 import Player from '../lib/Player';
 import TwilioVideo from '../lib/TwilioVideo';
-import { isViewingArea, isJukeBoxArea } from '../TestUtils';
+import { isViewingArea } from '../TestUtils';
+import { isJukeBoxArea } from '../TestUtils';
 import {
   ChatMessage,
   ConversationArea as ConversationAreaModel,
@@ -315,7 +316,7 @@ export default class Town {
     const area = this._interactables.find(
       eachArea => eachArea.id === jukeBoxArea.id,
     ) as JukeBoxArea;
-    if (!area || !jukeBoxArea.songQueue || area.songQueue) {
+    if (!area || jukeBoxArea.songQueue.length === 0 || area.songQueue.length > 0) {
       return false;
     }
     area.updateModel(jukeBoxArea);

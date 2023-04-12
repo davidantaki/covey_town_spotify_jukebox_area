@@ -17,6 +17,7 @@ import {
   PlayerLocation,
   TownEmitter,
   ViewingArea as ViewingAreaModel,
+  JukeBoxArea as JukeBoxAreaModel,
 } from '../types/CoveyTownSocket';
 import ConversationArea from './ConversationArea';
 import Town from './Town';
@@ -325,6 +326,86 @@ const testingMaps: TestMapDict = {
                 name: 'video',
                 type: 'string',
                 value: 'someURL',
+              },
+            ],
+            rotation: 0,
+            visible: true,
+            width: 326,
+            x: 600,
+            y: 1200,
+          },
+        ],
+        opacity: 1,
+        type: 'objectgroup',
+        visible: true,
+        x: 0,
+        y: 0,
+      },
+    ],
+  },
+  twoJukeBox: {
+    tiledversion: '1.9.0',
+    tileheight: 32,
+    tilesets: [],
+    tilewidth: 32,
+    type: 'map',
+    layers: [
+      {
+        id: 4,
+        name: 'Objects',
+        objects: [
+          {
+            type: 'JukeboxArea',
+            height: 266,
+            id: 43,
+            name: 'Name2',
+            properties: [
+              {
+                name: 'song',
+                type: 'class',
+                value: {
+                  songQueue: [
+                    {
+                      title: 'Bohemian Rapsody',
+                      artists: ['Queen'],
+                      spotifyId: 'some:spotify:id',
+                      addedBy: 'tetPlayer',
+                      upvotes: 0,
+                      downvotes: 0,
+                      songJson: '{someJsonString: 0}',
+                    },
+                  ],
+                },
+              },
+            ],
+            rotation: 0,
+            visible: true,
+            width: 467,
+            x: 612,
+            y: 120,
+          },
+          {
+            type: 'JukeboxArea',
+            height: 237,
+            id: 55,
+            name: 'Name1',
+            properties: [
+              {
+                name: 'song',
+                type: 'class',
+                value: {
+                  songQueue: [
+                    {
+                      title: 'Hey Jude',
+                      artists: ['The Beatles'],
+                      spotifyId: 'some:spotify:id',
+                      addedBy: 'tetPlayer',
+                      upvotes: 0,
+                      downvotes: 0,
+                      songJson: '{someJsonString: 0}',
+                    },
+                  ],
+                },
               },
             ],
             rotation: 0,
@@ -682,6 +763,64 @@ describe('Town', () => {
         const viewingArea = town.getInteractable('Name3');
         expect(viewingArea.occupantsByID).toEqual([player.id]);
       });
+    });
+  });
+
+  describe('addJukeBoxArea', () => {
+    beforeEach(() => {
+      town.initializeFromMap(testingMaps.twoJukeBox);
+    });
+    it('Should return false if no area exists with that ID', () => {
+      expect(
+        town.addJukeBoxArea({
+          id: nanoid(),
+          songQueue: [
+            {
+              title: 'test',
+              artists: ['test'],
+              spotifyId: 'some:spotify:id',
+              addedBy: 'testPlayer',
+              upvotes: 0,
+              songJson: '{someJson: 0}',
+            },
+          ],
+        }),
+      ).toBe(false);
+    });
+    it('Should return false if the requested song is empty', () => {
+      expect(town.addJukeBoxArea({ id: 'Name2', songQueue: [] })).toBe(false);
+    });
+    it('Should return false if the area is already active', () => {
+      expect(
+        town.addJukeBoxArea({
+          id: 'Name2',
+          songQueue: [
+            {
+              title: 'Hey Jude',
+              artists: ['The Beatles'],
+              spotifyId: 'some:spotify:id',
+              addedBy: 'testPlayer',
+              upvotes: 0,
+              songJson: '{someJsonString: 0}',
+            },
+          ],
+        }),
+      ).toBe(true);
+      expect(
+        town.addJukeBoxArea({
+          id: 'Name2',
+          songQueue: [
+            {
+              title: 'Let It Be',
+              artists: ['The Beatles'],
+              spotifyId: 'some:spotify:id',
+              addedBy: 'testPlayer',
+              upvotes: 0,
+              songJson: '{someJsonString: 0}',
+            },
+          ],
+        }),
+      ).toBe(false);
     });
   });
 

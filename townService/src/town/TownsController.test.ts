@@ -2,7 +2,13 @@ import assert from 'assert';
 import { DeepMockProxy, mockDeep } from 'jest-mock-extended';
 import { nanoid } from 'nanoid';
 import { Town } from '../api/Model';
-import { ConversationArea, Interactable, TownEmitter, ViewingArea } from '../types/CoveyTownSocket';
+import {
+  ConversationArea,
+  Interactable,
+  TownEmitter,
+  ViewingArea,
+  JukeBoxArea,
+} from '../types/CoveyTownSocket';
 import TownsStore from '../lib/TownsStore';
 import {
   createConversationForTesting,
@@ -12,6 +18,7 @@ import {
   isViewingArea,
   isConversationArea,
   MockedPlayer,
+  isJukeBoxArea,
 } from '../TestUtils';
 import { TownsController } from './TownsController';
 
@@ -354,6 +361,39 @@ describe('TownsController integration tests', () => {
         await expect(
           controller.createViewingArea(testingTown.townID, sessionToken, viewingArea),
         ).rejects.toThrow();
+      });
+    });
+
+    describe('Create Jukebox Area', () => {
+      it('Executes without error when creating a new viewing area', async () => {
+        const jukeBoxArea = interactables.find(isJukeBoxArea) as JukeBoxArea;
+        if (!jukeBoxArea) {
+          fail('Expected at least one jukebox area to be returned in the initial join data');
+        } else {
+          const newJukeBoxArea: JukeBoxArea = {
+            id: jukeBoxArea.id,
+            songQueue: [
+              {
+                title: 'Song',
+                artists: ['some artist'],
+                spotifyId: 'some:spotify:id',
+                addedBy: 'testPlayer',
+                upvotes: 0,
+                downvotes: 0,
+                songJson: '{someJsonString: 0}',
+              },
+            ],
+          };
+          await controller.createJukeBoxArea(testingTown.townID, sessionToken, newJukeBoxArea);
+          // Check to see that the viewing area was successfully updated
+          const townEmitter = getBroadcastEmitterForTownID(testingTown.townID);
+          const updateMessage = getLastEmittedEvent(townEmitter, 'interactableUpdate');
+          if (isJukeBoxArea(updateMessage)) {
+            expect(updateMessage).toEqual(newJukeBoxArea);
+          } else {
+            fail('Expected an interactableUpdate to be dispatched with the new viewing area');
+          }
+        }
       });
     });
   });

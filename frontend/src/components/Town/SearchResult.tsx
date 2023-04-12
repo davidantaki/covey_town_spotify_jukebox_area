@@ -2,7 +2,7 @@ import { Button } from '@chakra-ui/react';
 import { TableCell, TableRow } from '@material-ui/core';
 import QueueMusicIcon from '@material-ui/icons/QueueMusic';
 import React from 'react';
-import { Song } from './interactables/JukeBoxAreaSearchAndQueue';
+import { Song } from '../../classes/JukeBoxAreaController';
 
 export function SearchResult({
   songTitle,

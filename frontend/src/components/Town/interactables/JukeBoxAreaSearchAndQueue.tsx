@@ -29,7 +29,7 @@ import {
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
-import { Track } from '../../../classes/JukeBoxAreaController';
+import { Song, Track } from '../../../classes/JukeBoxAreaController';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
@@ -38,15 +38,6 @@ import { QueueItem } from '../QueueItem';
 import { SearchResult } from '../SearchResult';
 import { SpotifyWebPlayback } from '../WebPlaybackSDK';
 import JukeBoxAreaInteractable from './JukeBoxArea';
-
-export interface Song {
-  title: string;
-  artists: string[];
-  spotifyId: string;
-  addedBy: string;
-  upvotes: number;
-  songJson: Track;
-}
 
 export interface SearchItemType {
   id: string;

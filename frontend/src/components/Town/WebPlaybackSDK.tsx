@@ -2,7 +2,7 @@ import { Center, VStack } from '@chakra-ui/react';
 import { Table, TableBody, TableCell, TableContainer, TableRow } from '@material-ui/core';
 import React, { useEffect, useMemo, useState } from 'react';
 import SpotifyPlayer from 'spotify-web-playback';
-import { Song } from './interactables/JukeBoxAreaSearchAndQueue';
+import { Song } from '../../classes/JukeBoxAreaController';
 
 export function SpotifyWebPlayback({
   token,

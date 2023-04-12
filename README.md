@@ -34,21 +34,20 @@ To create an account and configure your local environment:
 | `TWILIO_API_KEY_SECRET` | The secret for the API key you created.   |
 | `TWILIO_API_AUTH_TOKEN` | Visible on your twilio account dashboard. |
 
-You will also need a Spotify account. 
+You will also need a Spotify account.
+
 1. Go to the Spotify developer dashboard: https://developer.spotify.com/dashboard
 1. Click the “Create App” button.
-    1. Fill in the App name.
-    1. Fill in the Redirect URI as https://localhost:8081/callback
+   1. Fill in the App name.
+   1. Fill in the Redirect URI as https://localhost:8081/callback
 1. Once in the App’s page, click the “Settings” button and put the following values into the `.env` file you created earlier.
 
-
-| Config Value            | Description                               |
-| ----------------------- | ----------------------------------------- |
-| `SPOTIFY_CLIENT_ID`    | Visible on your spotify account dashboard. |
-| `SPOTIFY_CLIENT_SECRET`    |  Visible on your spotify account dashboard. |
-| `SPOTIFY_REDIRECT_URI` | http://localhost:8081/callback |
-| `CLIENT_URL` | http://localhost:3000. |
-
+| Config Value            | Description                                |
+| ----------------------- | ------------------------------------------ |
+| `SPOTIFY_CLIENT_ID`     | Visible on your spotify account dashboard. |
+| `SPOTIFY_CLIENT_SECRET` | Visible on your spotify account dashboard. |
+| `SPOTIFY_REDIRECT_URI`  | http://localhost:8081/callback             |
+| `CLIENT_URL`            | http://localhost:3000.                     |
 
 ### Starting the backend
 
@@ -59,9 +58,8 @@ The backend will automatically restart if you change any of the files in the `to
 
 Create a `.env` file in the `frontend` directory, with the following values
 REACT_APP_TOWNS_SERVICE_URL=http://localhost:8081
-REACT_APP_SPOTIFY_CLIENT_ID=1d5bdd45d42c4c92a2a935346a2fc3e2
+REACT_APP_SPOTIFY_CLIENT_ID=_WHATEVER YOU ENTERED FOR BACKEND `SPOTIFY_CLIENT_ID`_
 REACT_APP_SPOTIFY_REDIRECT_URI=http://localhost:8081/callback
-
 
 ### Running the frontend
 

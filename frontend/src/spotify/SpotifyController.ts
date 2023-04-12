@@ -1,4 +1,5 @@
 import QueryString from 'qs';
+import { SearchResultsType } from '../components/Town/interactables/JukeBoxAreaSearchAndQueue';
 
 const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
 const SPOTIFY_REDIRECT_URI = 'https://covey-town-jukebox.herokuapp.com/callback';
@@ -98,7 +99,7 @@ export default class SpotifyController {
     query: string,
     type: string,
     limit = 10,
-  ): Promise<unknown> {
+  ): Promise<SearchResultsType | undefined> {
     const queryParams = QueryString.stringify({
       query,
       type,
@@ -116,7 +117,7 @@ export default class SpotifyController {
       const data = await response.json();
       return data;
     } catch (error) {
-      return 'Failed';
+      console.log(error);
     }
   }
 

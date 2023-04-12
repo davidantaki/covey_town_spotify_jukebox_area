@@ -29,6 +29,7 @@ import {
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
+import { Track } from '../../../classes/JukeBoxAreaController';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
@@ -37,7 +38,6 @@ import { QueueItem } from '../QueueItem';
 import { SearchResult } from '../SearchResult';
 import { SpotifyWebPlayback } from '../WebPlaybackSDK';
 import JukeBoxAreaInteractable from './JukeBoxArea';
-import { Track } from '../../../classes/JukeBoxAreaController';
 
 export interface Song {
   title: string;
@@ -48,28 +48,18 @@ export interface Song {
   songJson: Track;
 }
 
-export interface SearchResultType {
-  track: {
-    item: {
-      id: string;
-      name: string;
-      artists: { name: string }[];
-      duration: string;
-      uri: string;
-    };
-  };
+export interface SearchItemType {
+  id: string;
+  name: string;
+  artists: { name: string }[];
+  duration_ms: string;
+  uri: string;
 }
 
 export interface SearchResultsType {
   tracks: {
-    items: {
-      id: string;
-      name: string;
-      artists: { name: string }[];
-      duration: string;
-      uri: string;
-    }[];
-  }[];
+    items: SearchItemType[];
+  };
 }
 
 export function createSong(addedBy: string, songJson: Track): Song {
@@ -109,7 +99,7 @@ export function SearchAndQueue({
   handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   findSongs: () => void;
   upvoteSong: (songId: string) => void;
-  searchResults: SearchResultsType;
+  searchResults: SearchResultsType | undefined;
   currentSong: Song | undefined;
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
@@ -155,21 +145,18 @@ export function SearchAndQueue({
               </TableHead>
               <TableBody>
                 {/* Map search results response to SearchResults */}
-                {searchResults &&
-                  searchResults.tracks &&
-                  searchResults.tracks.items &&
-                  searchResults.tracks.items.map((item: SearchResultType) => {
-                    return (
-                      <SearchResult
-                        key={item.id}
-                        songTitle={item.name}
-                        songArtist={item.artists[0].name}
-                        songDuration={item.duration_ms}
-                        songUri={item.uri}
-                        addSongToQueueFunc={addSongToQueue}
-                      />
-                    );
-                  })}
+                {searchResults?.tracks?.items?.map((item: SearchItemType) => {
+                  return (
+                    <SearchResult
+                      key={item.id}
+                      songTitle={item.name}
+                      songArtist={item.artists[0].name}
+                      songDuration={item.duration_ms}
+                      songUri={item.uri}
+                      addSongToQueueFunc={addSongToQueue}
+                    />
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
@@ -220,10 +207,10 @@ export function JukeBoxArea({
 }): JSX.Element {
   const townController = useTownController();
   const jukeBoxAreaController = useJukeBoxAreaController(jukeBoxArea.name);
-  const [searchValue, setSearchValue] = React.useState('');
+  const [searchValue, setSearchValue] = useState('');
   const [spotifyAuthToken, setSpotifyAuthToken] = useState<string>('');
   // Current search results JSON Object
-  const [searchResults, setSearchResults] = useState<SearchResultsType>();
+  const [searchResults, setSearchResults] = useState<SearchResultsType | undefined>();
   const toast = useToast();
   const { isOpen, onOpen } = useDisclosure();
   const [currentSong, setCurrentSong] = useState<Song | undefined>(undefined);
@@ -303,7 +290,7 @@ export function JukeBoxArea({
       const songs = await SpotifyController.search(spotifyAuthToken, searchValue, 'track');
       setSearchResults(songs);
     } else {
-      setSearchResults('');
+      setSearchResults(undefined);
     }
   };
 

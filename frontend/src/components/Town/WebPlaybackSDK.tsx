@@ -1,14 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import SpotifyPlayer from 'spotify-web-playback';
 import { Center, VStack } from '@chakra-ui/react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from '@material-ui/core';
+import { Table, TableBody, TableCell, TableContainer, TableRow } from '@material-ui/core';
 import { Song } from './interactables/JukeBoxAreaSearchAndQueue';
 
 export function SpotifyWebPlayback({
@@ -19,13 +12,11 @@ export function SpotifyWebPlayback({
   currentTrack: Song;
 }): JSX.Element {
   const [isConnected, setConnected] = useState<boolean>(false);
-  const [isActive, setActive] = useState<boolean>(false);
-  // const [currentTrack, setTrack] = useState<Song>(track);
 
   const spotifyPlayer = useMemo(() => {
     return new SpotifyPlayer('Covey.Town Spotify Player');
   }, []);
-  const uri = 'spotify:track:54flyrjcdnQdco7300avMJ';
+
   async function connectToSpotifyPlayer(authToken: string) {
     try {
       const response = await spotifyPlayer.connect(authToken);

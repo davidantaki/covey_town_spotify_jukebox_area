@@ -215,7 +215,7 @@ export function JukeBoxArea({
   // Current search results JSON Object
   const [searchResults, setSearchResults] = useState<any>();
   const toast = useToast();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen, onOpen } = useDisclosure();
   const [currentSong, setCurrentSong] = useState<Song | undefined>(undefined);
   const [queue, setQueue] = useState(jukeBoxAreaController.queue);
   const [playerVotes, setPlayerVotes] = useState<{

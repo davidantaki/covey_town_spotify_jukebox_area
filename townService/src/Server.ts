@@ -88,10 +88,8 @@ app.get('/callback', async (req, res) => {
       res.send(`Error: ${res}`);
       return;
     }
-    // console.log(response);
     const token = response.data.access_token;
     res.redirect(`${CLIENT_URL}/jukebox-spotify-login/save-auth-token/${token}`);
-    // console.log(`token:${token}`);
   } catch (error) {
     res.send(`Error: ${error}`);
   }

@@ -137,7 +137,6 @@ export function JukeBoxArea({
       };
 
       const interval = setInterval(() => getTime(), 1000);
-      console.log('interval: ', interval);
       return () => clearInterval(interval);
     }
   }, [isOpen, spotifyAuthToken]);
@@ -234,7 +233,6 @@ export function JukeBoxArea({
     } else {
       const updatedQueue = [...queue, song];
       updateQueue(updatedQueue);
-      console.log('updated');
     }
   };
 

@@ -369,7 +369,6 @@ export function JukeBoxArea({
         findSongs={findSongs}
         upvoteSong={upvoteSong}
         searchResults={searchResults}
-        currentSong={currentSong}
         addSongToQueue={addSongToQueue}
         sortedQueue={sortedQueue}
         authToken={spotifyAuthToken}

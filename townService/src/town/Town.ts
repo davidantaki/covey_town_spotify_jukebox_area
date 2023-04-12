@@ -315,7 +315,7 @@ export default class Town {
     const area = this._interactables.find(
       eachArea => eachArea.id === jukeBoxArea.id,
     ) as JukeBoxArea;
-    if (!area || !jukeBoxArea.songQueue || area.songQueue) {
+    if (!area || jukeBoxArea.songQueue.length === 0 || area.songQueue.length > 0) {
       return false;
     }
     area.updateModel(jukeBoxArea);

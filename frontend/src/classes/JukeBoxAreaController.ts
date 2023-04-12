@@ -74,8 +74,10 @@ export default class JukeBoxAreaController extends (EventEmitter as new () => Ty
   }
 
   public set queue(queue: Song[]) {
-    this._model.songQueue = queue;
-    this.emit('jukeBoxQueueChange', queue);
+    if (queue !== this._model.songQueue) {
+      this._model.songQueue = queue;
+      this.emit('jukeBoxQueueChange', queue);
+    }
   }
 
   /**

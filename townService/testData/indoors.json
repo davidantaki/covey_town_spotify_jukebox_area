@@ -563,6 +563,35 @@
                  "width":158.333333333333,
                  "x":3538.33333333333,
                  "y":826.666666666667
+                },
+                {
+                     "type":"JukeboxArea",
+                     "height":150.833333333333,
+                     "id":38,
+                     "name":"Room Player",
+                     "properties":[
+                         {
+                            "name": "song",
+                            "type": "class",
+                            "value": {
+                              "songQueue": [
+                                {
+                                  "title": "Hey Jude",
+                                  "artists": ["The Beatles"],
+                                  "spotifyId": "some:spotify:id",
+                                  "addedBy": "testPlayer",
+                                  "upvotes": 0,
+                                  "downvotes": 0,
+                                  "songJson": "{someJsonString: 0}"
+                                }
+                              ]
+                            }
+                         }],
+                     "rotation":0,
+                     "visible":true,
+                     "width":158.333333333333,
+                     "x":850.333333333333,
+                     "y":826.666666666667
                 }],
          "opacity":1,
          "type":"objectgroup",

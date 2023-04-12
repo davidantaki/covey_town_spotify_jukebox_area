@@ -379,7 +379,6 @@ describe('TownsController integration tests', () => {
                 spotifyId: 'some:spotify:id',
                 addedBy: 'testPlayer',
                 upvotes: 0,
-                downvotes: 0,
                 songJson: '{someJsonString: 0}',
               },
             ],

@@ -95,8 +95,17 @@ export function SearchAndQueue({
   handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   findSongs: () => void;
   upvoteSong: (songId: string) => void;
-  searchResults: any;
-  currentSong: Song | undefined;
+  searchResults: {
+    tracks: {
+      items: {
+        id: string;
+        name: string;
+        artists: { name: string }[];
+        duration: string;
+        uri: string;
+      }[];
+    };
+  };
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
   authToken: string;

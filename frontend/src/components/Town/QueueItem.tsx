@@ -2,8 +2,8 @@ import { Button } from '@chakra-ui/react';
 import { Grid, TableCell, TableRow } from '@material-ui/core';
 import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
-import { useState } from 'react';
-import React, { Song } from './interactables/JukeBoxAreaSearchAndQueue';
+import React, { useState } from 'react';
+import { Song } from '../../classes/JukeBoxAreaController';
 
 export function QueueItem({ song, onUpvote }: { song: Song; onUpvote: () => void }): JSX.Element {
   const [upvoted, setUpvoted] = useState(false);

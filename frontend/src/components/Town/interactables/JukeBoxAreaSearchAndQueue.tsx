@@ -1,13 +1,8 @@
 /// <reference types='@types/spotify-web-playback-sdk' />;
 import {
-  Box,
-  Button,
   Center,
-  Flex,
   Grid,
   GridItem,
-  Input,
-  InputGroup,
   Modal,
   ModalCloseButton,
   ModalContent,
@@ -16,16 +11,7 @@ import {
   ModalOverlay,
   useDisclosure,
   useToast,
-  VStack,
 } from '@chakra-ui/react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from '@material-ui/core';
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
@@ -34,9 +20,8 @@ import { useInteractable, useJukeBoxAreaController } from '../../../classes/Town
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
 import { JukeboxSpotifyLogin } from '../Login';
-import { QueueItem } from '../QueueItem';
-import { SearchResult } from '../SearchResult';
-import { SpotifyWebPlayback } from '../WebPlaybackSDK';
+import { QueueView } from '../QueueView';
+import { SpotifySearchResult } from '../SpotifySearchResult';
 import JukeBoxAreaInteractable from './JukeBoxArea';
 
 export interface SearchItemType {
@@ -91,7 +76,6 @@ export function SearchAndQueue({
   findSongs: () => void;
   upvoteSong: (songId: string) => void;
   searchResults: SearchResultsType | undefined;
-  currentSong: Song | undefined;
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
   authToken: string;
@@ -99,88 +83,18 @@ export function SearchAndQueue({
 }): JSX.Element {
   return (
     <Grid templateColumns='repeat(51, 1fr)' templateRows='repeat(1fr, 2)'>
-      <GridItem colSpan={25}>
-        <Flex gap={'5px'}>
-          <Box width={'85%'} marginLeft={'2%'}>
-            <InputGroup>
-              <Input
-                pr='4.5rem'
-                type='tel'
-                value={searchValue}
-                onChange={handleSearchChange}
-                onKeyPress={e => {
-                  if (e.key === 'Enter') {
-                    findSongs();
-                  }
-                }}
-                placeholder='Search Songs'
-              />
-            </InputGroup>
-          </Box>
-          <Box width={'15%'} marginRight={'2%'}>
-            <Button width={'100%'} onClick={findSongs}>
-              Search!
-            </Button>
-          </Box>
-        </Flex>
-        <VStack>
-          <TableContainer style={{ paddingLeft: '2%' }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Duration</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>+ Queue</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {/* Map search results response to SearchResults */}
-                {searchResults?.tracks?.items?.map((item: SearchItemType) => {
-                  return (
-                    <SearchResult
-                      key={item.id}
-                      songTitle={item.name}
-                      songArtist={item.artists[0].name}
-                      songDuration={item.duration_ms}
-                      songUri={item.uri}
-                      addSongToQueueFunc={addSongToQueue}
-                    />
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </VStack>
-      </GridItem>
+      <SpotifySearchResult
+        searchValue={searchValue}
+        handleSearchChange={handleSearchChange}
+        findSongs={findSongs}
+        searchResults={searchResults}
+        addSongToQueue={addSongToQueue}></SpotifySearchResult>
       <GridItem colSpan={1} bg={'black'} width={'10%'} justifySelf='center'></GridItem>
-      <GridItem colSpan={25}>
-        <SpotifyWebPlayback token={authToken} currentTrack={currentTrack} />
-        <VStack>
-          <TableContainer style={{ paddingRight: '2%' }}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Title</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Artist</TableCell>
-                  <TableCell style={{ fontWeight: 'bolder' }}>Vote</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {sortedQueue.map((song: Song) => {
-                  return (
-                    <QueueItem
-                      key={song.spotifyId}
-                      song={song}
-                      onUpvote={() => upvoteSong(song.spotifyId)}
-                    />
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </VStack>
-      </GridItem>
+      <QueueView
+        upvoteSong={upvoteSong}
+        sortedQueue={sortedQueue}
+        authToken={authToken}
+        currentTrack={currentTrack}></QueueView>
     </Grid>
   );
 }

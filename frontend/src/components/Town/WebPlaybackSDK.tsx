@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import SpotifyPlayer from 'spotify-web-playback';
 import { Center, VStack } from '@chakra-ui/react';
 import { Table, TableBody, TableCell, TableContainer, TableRow } from '@material-ui/core';
+import React, { useEffect, useMemo, useState } from 'react';
+import SpotifyPlayer from 'spotify-web-playback';
 import { Song } from './interactables/JukeBoxAreaSearchAndQueue';
 
 export function SpotifyWebPlayback({
@@ -9,7 +9,7 @@ export function SpotifyWebPlayback({
   currentTrack,
 }: {
   token: string;
-  currentTrack: Song;
+  currentTrack: Song | undefined;
 }): JSX.Element {
   const [isConnected, setConnected] = useState<boolean>(false);
 
@@ -56,7 +56,6 @@ export function SpotifyWebPlayback({
     return (
       <>
         <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
-          {/* {currentTrack.name} */}
           Connected
         </Center>
         <VStack>

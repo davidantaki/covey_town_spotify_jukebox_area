@@ -86,7 +86,6 @@ export function SearchAndQueue({
   findSongs,
   upvoteSong,
   searchResults,
-  currentSong,
   addSongToQueue,
   sortedQueue,
   authToken,
@@ -101,7 +100,7 @@ export function SearchAndQueue({
   addSongToQueue: (song: Song) => void;
   sortedQueue: Song[];
   authToken: string;
-  currentTrack: Song;
+  currentTrack: Song | undefined;
 }): JSX.Element {
   return (
     <Grid templateColumns='repeat(51, 1fr)' templateRows='repeat(1fr, 2)'>
@@ -165,9 +164,6 @@ export function SearchAndQueue({
       <GridItem colSpan={1} bg={'black'} width={'10%'} justifySelf='center'></GridItem>
       <GridItem colSpan={25}>
         <SpotifyWebPlayback token={authToken} currentTrack={currentTrack} />
-        <Center fontSize='2xl' justifyContent={'center'} marginBottom={'4px'}>
-          Current Song: {currentSong?.title}
-        </Center>
         <VStack>
           <TableContainer style={{ paddingRight: '2%' }}>
             <Table>
@@ -385,7 +381,7 @@ export function JukeBoxArea({
         addSongToQueue={addSongToQueue}
         sortedQueue={sortedQueue}
         authToken={spotifyAuthToken}
-        currentTrack={sortedQueue[0]}
+        currentTrack={currentSong}
       />
     );
   }

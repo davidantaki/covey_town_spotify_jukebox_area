@@ -43,7 +43,8 @@ export function SearchResult({
     const minutes = Math.floor(secondsTotal / 60);
     console.log(secondsTotal);
     const seconds = secondsTotal - minutes * 60;
-    return `${minutes}:${seconds}`;
+    const formattedSeconds = seconds > 9 ? seconds.toString() : `0${seconds.toString()}`;
+    return `${minutes}:${formattedSeconds}`;
   };
 
   return (

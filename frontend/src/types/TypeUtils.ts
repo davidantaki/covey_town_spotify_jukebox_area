@@ -14,6 +14,9 @@ export function isViewingArea(interactable: Interactable): interactable is Viewi
   return 'isPlaying' in interactable;
 }
 
+/**
+ * Test to see if an interactable is a jukebox area
+ */
 export function isJukeBoxArea(interactable: Interactable): interactable is JukeBoxArea {
   return 'songQueue' in interactable;
 }

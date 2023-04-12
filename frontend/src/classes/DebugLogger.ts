@@ -1,37 +1,34 @@
 /* eslint-disable no-console */
 
 export default class DebugLogger {
-  private enabled = false;
+  private _enabled = false;
 
-  constructor(
-    private prefix: string,
-  ) {
-  }
+  constructor(private _prefix: string) {}
 
   enable(): void {
-    this.enabled = true;
+    this._enabled = true;
   }
 
   disable(): void {
-    this.enabled = false;
+    this._enabled = false;
   }
 
   get isEnabled(): boolean {
-    return this.enabled;
+    return this._enabled;
   }
 
   prefixMessage(msg: string): string {
-    return `${DebugLogger.getTimeString(new Date())} [${this.prefix}]: ${msg}`;
+    return `${DebugLogger.getTimeString(new Date())} [${this._prefix}]: ${msg}`;
   }
 
   info(msg: string, ...params: any[]): void {
-    if (this.enabled) {
+    if (this._enabled) {
       console.info(this.prefixMessage(msg), ...params);
     }
   }
 
   warn(msg: string, ...params: any[]): void {
-    if (this.enabled) {
+    if (this._enabled) {
       console.warn(this.prefixMessage(msg), ...params);
     }
   }

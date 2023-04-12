@@ -12,6 +12,16 @@ import { Song } from '../../classes/JukeBoxAreaController';
 import { SearchItemType, SearchResultsType } from './interactables/JukeBoxAreaSearchAndQueue';
 import { SearchResult } from './SpotifyItemResult';
 
+/**
+ * SpotifySearchResult is the component that is the left half of the JukeBoxArea, where it will
+ * let users search, nagivate, and add songs to the communal queue. They can also view the duration
+ * of the songs here.
+ * @param props is a set of properties: searchValue, handleSearchChange, findSongs, searchResults,
+ * and addSongToQueue, where searchValue is what is being searched, handleSearchChange is how we respond
+ * to changes in the search, findSongs is a function to find all the songs based on the keyword, search
+ * results is the information that is to be rendered for the results, and addSongToQueue is a function
+ * that handles the adding of a song to the communal queue.
+ */
 export function SpotifySearchResult({
   searchValue,
   handleSearchChange,

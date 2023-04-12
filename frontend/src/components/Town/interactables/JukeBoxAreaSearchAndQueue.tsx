@@ -15,7 +15,7 @@ import {
 import axios from 'axios';
 import React, { useCallback, useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
-import { Song, Track } from '../../../classes/JukeBoxAreaController';
+import { Song } from '../../../classes/JukeBoxAreaController';
 import { useInteractable, useJukeBoxAreaController } from '../../../classes/TownController';
 import useTownController from '../../../hooks/useTownController';
 import SpotifyController from '../../../spotify/SpotifyController';
@@ -38,28 +38,18 @@ export interface SearchResultsType {
   };
 }
 
-export function createSong(addedBy: string, songJson: Track): Song {
-  const title: string = songJson.name;
-  const artists: string[] = songJson.artists.map((artist: { name: string }) => artist.name);
-  const spotifyId: string = songJson.id;
-  const upvotes = 0;
-
-  return {
-    title,
-    artists,
-    spotifyId,
-    addedBy,
-    upvotes,
-    songJson: { ...songJson },
-  };
-}
-
 export class MockReactPlayer extends ReactPlayer {
   render(): React.ReactNode {
     return <></>;
   }
 }
 
+/**
+ * The SearchAndQueue component renders the Search and the Queue for the JukeboxInteractable.
+ * @param props: A list of properties searchValue, handleSearchChange, findSongs, upVoteSong, searchResults,
+ * addToSongQueue, sortedQueue, authToken, currentTrack. All of which either describe what they are or what they
+ * do in plain english.
+ */
 export function SearchAndQueue({
   searchValue,
   handleSearchChange,
@@ -100,10 +90,10 @@ export function SearchAndQueue({
 }
 
 /**
- * The ViewingArea monitors the player's interaction with a ViewingArea on the map: displaying either
- * a popup to set the video for a viewing area, or if the video is set, a video player.
+ * The JukeboxArea monitors the player's interaction with a JukeboxArea on the map: displaying a screen
+ * that consists of the login page or the conetnts of Search and Queue
  *
- * @param props: the viewing area interactable that is being interacted with
+ * @param props: the jukebox area interactable that is being interacted with
  */
 export function JukeBoxArea({
   jukeBoxArea,
@@ -313,7 +303,7 @@ export function JukeBoxArea({
 }
 
 /**
- * The ViewingAreaWrapper is suitable to be *always* rendered inside of a town, and
+ * The JukebBoxAreaAreaWrapper is suitable to be *always* rendered inside of a town, and
  * will activate only if the player begins interacting with a viewing area.
  */
 export default function JukeBoxAreaWrapper(): JSX.Element {

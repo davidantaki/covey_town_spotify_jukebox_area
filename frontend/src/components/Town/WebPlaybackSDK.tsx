@@ -4,6 +4,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import SpotifyPlayer from 'spotify-web-playback';
 import { Song } from '../../classes/JukeBoxAreaController';
 
+/**
+ * SpotifyWebPlayback is a visual component that does the heavylifting with respect to
+ * web SDK playing. It will create an SDK instance and connect the spotify account to it
+ * based on the authorization token.
+ * @param props is the set of properties: token, currentTrack, where token represents the authorization
+ * token needed to make requests from Spotify API and currentTrack is the song to play.
+ */
 export function SpotifyWebPlayback({
   token,
   currentTrack,

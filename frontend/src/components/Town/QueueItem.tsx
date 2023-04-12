@@ -5,6 +5,12 @@ import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import React, { useState } from 'react';
 import { Song } from '../../classes/JukeBoxAreaController';
 
+/**
+ * This shows a single entry in the queue, where the song name, artists, and an option to
+ * upvote or downvote (if already upvoted) will appear.
+ * @param props holds two properies of song and onUpvote, where song represents the Song
+ * for the item we plan to render, and onUpvote is what happens when this song is upvoted
+ */
 export function QueueItem({ song, onUpvote }: { song: Song; onUpvote: () => void }): JSX.Element {
   const [upvoted, setUpvoted] = useState(false);
   const onUpvoteClicked = () => {

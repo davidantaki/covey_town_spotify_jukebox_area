@@ -12,6 +12,14 @@ import { Song } from '../../classes/JukeBoxAreaController';
 import { QueueItem } from './QueueItem';
 import { SpotifyWebPlayback } from './WebPlaybackSDK';
 
+/**
+ * The QueueView component renders the entirety of the queue including the curerent song being played,
+ * the status of our spotify player, and the queue. 
+ * @param props is a set of properties: upvoteSong, sortedQueue, authToken, currentTrack, where
+ * upvoteSong tels us how to hand upvotes across all the songs, sortedQueue is the queue to render,
+ * authToken is the token we receive from Spotify to play songs, and currentTrack is the current song
+ * that is to be played. 
+] */
 export function QueueView({
   upvoteSong,
   sortedQueue,

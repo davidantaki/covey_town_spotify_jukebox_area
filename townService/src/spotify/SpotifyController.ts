@@ -1,7 +1,5 @@
 import axios from 'axios';
-import QueryString from 'qs';
 import * as dotenv from 'dotenv';
-import { searchPipe, trackPipe } from './ValidateSpotify';
 
 dotenv.config();
 
@@ -13,7 +11,6 @@ export interface SpotifyTokenResponse {
   status: number;
   data: {
     access_token: string;
-    // Add other properties if needed
   };
 }
 
@@ -46,77 +43,5 @@ export default class SpotifyController {
       },
     });
     return res;
-  }
-
-  /**
-   * This method uses Spotify API to get track information for a given track that is identified
-   * by a unique trackId. In order to ensure security, an auth token is used for authentication.
-   * @param authToken is the authorizatization token needed for Spotify API to give info.
-   * @param trackId is the id of the track that we seek to retrieve.
-   * @returns a JSON with the information of a song.
-   * @throws an error when the method could not get the track. This will happen if either the trackId
-   * is invalid or the auth token is not valid / expired.
-   */
-  public static async track(authToken: string, trackId: string): Promise<unknown> {
-    const response = axios({
-      method: 'get',
-      url: `https://api.spotify.com/v1/tracks/${trackId}`,
-      headers: {
-        'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(res => {
-        if (res.status === 200) {
-          return trackPipe(res.data);
-        }
-        return res;
-      })
-      .catch(error => {
-        throw new Error(error);
-      });
-    return response;
-  }
-
-  /**
-   * This method uses Spotify API to search for arbitrary information for a given track that is identified
-   * by a unique trackId. In order to ensure security, an auth token is used for authentication.
-   * @param authToken is the authorizatization token needed for Spotify API to give info.
-   * @param query is the search we are making.
-   * @param type is the list of types of results we want. For example songs, albums, etc...
-   * @param limit is the total number of results we want to see.
-   * @returns a JSON with the information we searched for.
-   * @throws an error when the method could not search. This will happen if either the types are
-   *  invalid or the auth token is not valid / expired, etc...
-   */
-  public static async search(
-    authToken: string,
-    query: string,
-    type: string,
-    limit = 10,
-  ): Promise<unknown> {
-    const queryParams = QueryString.stringify({
-      query,
-      type,
-      limit,
-    });
-    const response = axios({
-      method: 'get',
-      url: `https://api.spotify.com/v1/search?${queryParams}`,
-      headers: {
-        'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(res => {
-        if (res.status === 200) {
-          return searchPipe(res.data);
-        }
-        return res;
-      })
-      .catch(error => {
-        throw new Error(error);
-      });
-    return response;
   }
 }

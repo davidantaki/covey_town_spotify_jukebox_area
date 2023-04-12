@@ -55,32 +55,6 @@ export default class SpotifyController {
   }
 
   /**
-   * This method uses Spotify API to get track information for a given track that is identified
-   * by a unique trackId. In order to ensure security, an auth token is used for authentication.
-   * @param authToken is the authorizatization token needed for Spotify API to give info.
-   * @param trackId is the id of the track that we seek to retrieve.
-   * @returns a JSON with the information of a song.
-   * @throws an error when the method could not get the track. This will happen if either the trackId
-   * is invalid or the auth token is not valid / expired.
-   */
-  public static async track(authToken: string, trackId: string): Promise<unknown> {
-    try {
-      const response = await fetch(`https://api.spotify.com/v1/tracks/${trackId}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.log('failed');
-      return 'Failed';
-    }
-  }
-
-  /**
    * This method uses Spotify API to search for arbitrary information for a given track that is identified
    * by a unique trackId. In order to ensure security, an auth token is used for authentication.
    * @param authToken is the authorizatization token needed for Spotify API to give info.
@@ -123,7 +97,6 @@ export default class SpotifyController {
    */
   public static async playTrack(authToken: string, trackUri: string): Promise<unknown> {
     const devices = await this.getDevices(authToken);
-    // needs to be bolstered
     const deviceId = devices[0].id;
     try {
       const response = await fetch(`https://api.spotify.com/v1/me/player/play`, {

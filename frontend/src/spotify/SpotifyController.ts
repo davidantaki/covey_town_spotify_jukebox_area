@@ -1,10 +1,8 @@
 import QueryString from 'qs';
 import { SearchResultsType } from '../components/Town/interactables/JukeBoxAreaSearchAndQueue';
 
-// const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
-// const SPOTIFY_REDIRECT_URI = 'https://covey-town-jukebox.herokuapp.com/callback';
-const SPOTIFY_CLIENT_ID = '97a7d37671c84613aaae12f0d590663a';
-const SPOTIFY_REDIRECT_URI = 'http://localhost:8081/callback';
+const SPOTIFY_CLIENT_ID = '1d5bdd45d42c4c92a2a935346a2fc3e2';
+const SPOTIFY_REDIRECT_URI = 'https://covey-town-jukebox.herokuapp.com/callback';
 
 /**
  * Abstraction layer in code to communicate with Spotify API to receive authenication,

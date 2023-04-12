@@ -8,6 +8,7 @@ import {
   TownEmitter,
   ViewingArea,
   JukeBoxArea,
+  Track,
 } from '../types/CoveyTownSocket';
 import TownsStore from '../lib/TownsStore';
 import {
@@ -379,6 +380,12 @@ describe('TownsController integration tests', () => {
                 spotifyId: 'some:spotify:id',
                 addedBy: 'testPlayer',
                 upvotes: 0,
+                songJson: {
+                  id: 'testId',
+                  name: 'testName',
+                  artists: [],
+                  album: { id: 'testId', name: 'testAlbumName' },
+                } as Track,
               },
             ],
           };
